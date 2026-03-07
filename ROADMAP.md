@@ -140,7 +140,7 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
   - [x] `balanceOf(contractAddress, owner)` — check NFT balance
   - [x] `transfer(contractAddress, from, to, tokenId, signer)` — transfer NFT
 - [x] ERC-721 Solidity source code (`ERC721_SOURCE_CODE`)
-- [ ] Pre-compiled ERC-721 bytecode (Paris EVM) — needs solc compilation
+- [x] Pre-compiled ERC-721 bytecode (Paris EVM, solc 0.8.34, optimizer 200)
 - [x] Auto-verify on explorer after deployment (ready, pending bytecode)
 
 ### Phase 13: Discord Bot Integration (Low Priority) -- DONE
@@ -162,10 +162,10 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 
 > Advanced features and ecosystem tools.
 
-### Phase 14: NFT Bytecode Compilation
+### Phase 14: NFT Bytecode Compilation -- DONE
 
-- [ ] Compile ERC-721 source with solc (Paris EVM, optimizer 200)
-- [ ] Embed bytecode in `nft.ts`
+- [x] Compile ERC-721 source with solc (Paris EVM, optimizer 200)
+- [x] Embed bytecode in `nft.ts`
 - [ ] Test deployment on QFC testnet
 
 ### Phase 15: Airdrop Smart Contract
