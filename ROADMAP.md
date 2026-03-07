@@ -73,7 +73,7 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
   - Export `ERC20_SOURCE_CODE` for explorer contract verification
 - [x] Add `deploy-token` usage example to SKILL.md and README
   - Natural language trigger: "Create a token called X with symbol Y and supply Z on QFC"
-- [ ] Add `references/token-deployment.md`
+- [x] Add `references/token-deployment.md`
   - Step-by-step guide: create wallet → fund via faucet → deploy token → verify
   - Constructor parameters explained (name, symbol, initialSupply, decimals)
   - Gas cost estimates and testnet vs mainnet considerations
