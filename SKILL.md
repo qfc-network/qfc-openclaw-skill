@@ -57,6 +57,7 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Get Code**: Retrieve raw bytecode at an address
 
 ### ERC-20 Tokens (v2.1)
+- **Deploy Token**: Create a new ERC-20 token on QFC — specify name, symbol, and initial supply. All tokens are minted to the deployer. No compiler needed (pre-compiled bytecode).
 - **Token Info**: Get name, symbol, decimals, and total supply of any ERC-20 token
 - **Token Balance**: Check token balance for any address
 - **Transfer Tokens**: Send ERC-20 tokens to another address (auto-handles decimals)
@@ -143,6 +144,14 @@ Look up transaction 0xabc... on QFC testnet — show me the receipt
 ```
 
 ### ERC-20 Tokens
+```
+Create a new token called "My Token" with symbol MTK and 1 million supply on QFC testnet
+```
+
+```
+Deploy an ERC-20 token named "QFC Rewards" (symbol: QREW) with 10 million supply
+```
+
 ```
 What is the token at 0xabcd...? Show me name, symbol, and total supply.
 ```

@@ -1,11 +1,8 @@
-# QFC OpenClaw Skill — v2.1 Roadmap
+# QFC OpenClaw Skill — Roadmap
 
-> Branch: `v2.1`
-> Status: In Progress
+## v2.1 (Released)
 
-## Overview
-
-v2.1 focuses on AI inference integration (QFC's key differentiator), contract interaction, and OpenClaw best-practice alignment.
+AI inference integration, contract interaction, and OpenClaw best-practice alignment.
 
 ---
 
@@ -62,14 +59,53 @@ v2.1 focuses on AI inference integration (QFC's key differentiator), contract in
 
 ---
 
-## Release Criteria
+## v2.2 (Planned)
 
-- All new modules have matching SKILL.md capability descriptions
-- SecurityPolicy covers new transaction types
+> Token creation & explorer integration — let users deploy ERC-20 tokens on QFC via natural language.
+
+### Phase 6: One-Click Token Deployment (High Priority) -- DONE
+
+- [x] `QFCToken.deploy(name, symbol, initialSupply, signer)` — deploy a new ERC-20 token
+  - Embed pre-compiled bytecode (Paris EVM target, no PUSH0) to avoid requiring solc
+  - Auto-set gasLimit (800k) to work within QFC block gas limits
+  - Raw RPC receipt polling to avoid ethers.js log-parsing issues on QFC
+  - Return contract address, tx hash, explorer URL, token info
+  - Export `ERC20_SOURCE_CODE` for explorer contract verification
+- [x] Add `deploy-token` usage example to SKILL.md and README
+  - Natural language trigger: "Create a token called X with symbol Y and supply Z on QFC"
+- [ ] Add `references/token-deployment.md`
+  - Step-by-step guide: create wallet → fund via faucet → deploy token → verify
+  - Constructor parameters explained (name, symbol, initialSupply, decimals)
+  - Gas cost estimates and testnet vs mainnet considerations
+  - Known QFC EVM quirks (Paris EVM target required, eth_call limitations)
+
+### Phase 7: Token Management (Medium Priority)
+
+- [ ] `QFCToken.mint(tokenAddress, to, amount, signer)` — mint new tokens (if mintable)
+- [ ] `QFCToken.burn(tokenAddress, amount, signer)` — burn tokens
+- [ ] Mintable/Burnable token template (optional constructor flag)
+- [ ] `QFCToken.getDeployedTokens(owner)` — list tokens deployed by an address
+  - Query explorer indexer or scan deployment transactions
+
+### Phase 8: Explorer Contract Verification (Low Priority)
+
+- [ ] Explorer: add contract source code verification API (`POST /api/contracts/verify`)
+- [ ] Explorer: DB migration for `source_code`, `abi`, `compiler_version`, `is_verified` fields
+- [ ] `QFCContract.verify(address, sourceCode, compilerVersion, evmVersion)` — submit source for verification
+- [ ] After token deployment, auto-submit source code to explorer for verification
+- [ ] Verified contracts show source code and ABI on explorer contract page
+
+---
+
+## Release Criteria (v2.2)
+
+- Token deployment tested on QFC testnet (Paris EVM bytecode)
 - `npm run build` passes with no errors
-- Manual test against QFC testnet RPC
+- SKILL.md updated with deploy-token capability
+- Explorer verification API functional (Phase 8)
 
 ## Dependencies
 
-- QFC testnet running with v2.0 inference support
-- RPC endpoints: `submitPublicTask`, `getPublicTaskStatus`, `getSupportedModels`, `getInferenceStats`
+- QFC testnet RPC operational
+- Pre-compiled ERC-20 bytecode (Solidity 0.8.x, evmVersion: paris)
+- Explorer contract verification API (for Phase 8)

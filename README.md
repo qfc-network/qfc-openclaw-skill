@@ -59,6 +59,7 @@ npm install && npm run build
 - Current epoch info, finalized block height
 
 ### ERC-20 Tokens
+- **Deploy new tokens** — create ERC-20 tokens with one command (no compiler needed)
 - Get token info (name, symbol, decimals, totalSupply)
 - Check token balances, transfer tokens, approve spenders
 - Auto-handles decimal conversion
@@ -171,6 +172,10 @@ What's the score breakdown for validator 0x8d1d...?
 ```
 
 ### ERC-20 Tokens
+
+```
+Create a token called "My Token" with symbol MTK and 1 million supply on QFC testnet
+```
 
 ```
 What is the token at 0xabcd...?
