@@ -33,10 +33,15 @@ AI agent skill for interacting with the QFC blockchain. Provides wallet manageme
 
 ## Setup
 
+Pre-built — no build step needed. Just clone and point your OpenClaw config to this directory:
+
 ```bash
+git clone https://github.com/qfc-network/qfc-openclaw-skill.git
+cd qfc-openclaw-skill
 npm install
-npm run build
 ```
+
+If you modify the source, rebuild with `npm run build`.
 
 ## Modules
 
