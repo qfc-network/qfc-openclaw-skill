@@ -17,7 +17,18 @@ clawhub install qfc
 npx clawhub@latest install qfc
 ```
 
-Or from source:
+## Update
+
+```bash
+# via ClawHub
+clawhub update qfc
+
+# or if installed via openclaw skills add
+cd ~/.openclaw/skills/qfc-openclaw-skill
+git pull && npm install && npm run build
+```
+
+## Install from Source
 
 ```bash
 git clone https://github.com/qfc-network/qfc-openclaw-skill.git
