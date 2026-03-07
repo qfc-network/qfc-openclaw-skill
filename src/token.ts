@@ -235,6 +235,16 @@ export interface TokenTxResult {
   explorerUrl: string;
 }
 
+export interface BatchTransferItem {
+  to: string;
+  amount: string;
+}
+
+export interface BatchTransferResult {
+  successful: {to: string; amount: string; txHash: string}[];
+  failed: {to: string; amount: string; error: string}[];
+}
+
 export interface DeployTokenResult {
   contractAddress: string;
   txHash: string;
@@ -658,5 +668,42 @@ export class QFCToken {
       page,
       limit,
     };
+  }
+
+  /**
+   * Batch transfer ERC-20 tokens to multiple addresses sequentially.
+   * Useful for airdrops and multi-recipient distributions.
+   * @param tokenAddress - ERC-20 token contract address
+   * @param recipients - array of {to, amount} objects
+   * @param signer - wallet to sign the transactions
+   */
+  async batchTransfer(
+    tokenAddress: string,
+    recipients: BatchTransferItem[],
+    signer: ethers.Wallet,
+  ): Promise<BatchTransferResult> {
+    const connected = signer.connect(this.provider);
+    const contract = new ethers.Contract(tokenAddress, ERC20_ABI, connected);
+    const decimals = await contract.decimals();
+
+    const result: BatchTransferResult = { successful: [], failed: [] };
+
+    for (const recipient of recipients) {
+      try {
+        const parsedAmount = ethers.parseUnits(recipient.amount, decimals);
+        const tx = await contract.transfer(recipient.to, parsedAmount);
+        const receipt = await this.waitForReceipt(tx.hash);
+        if (receipt.status !== '0x1') {
+          result.failed.push({ to: recipient.to, amount: recipient.amount, error: 'Transaction reverted' });
+        } else {
+          result.successful.push({ to: recipient.to, amount: recipient.amount, txHash: tx.hash });
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        result.failed.push({ to: recipient.to, amount: recipient.amount, error: message });
+      }
+    }
+
+    return result;
   }
 }

@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { NetworkName, createProvider, getNetworkConfig } from './provider.js';
 import { QFCKeystore, type WalletMeta } from './keystore.js';
+import type { BatchTransferItem, BatchTransferResult } from './token.js';
 
 interface WalletCreationResult {
   address: string;
@@ -117,6 +118,57 @@ export class QFCWallet {
   static listSaved(): WalletMeta[] {
     const ks = new QFCKeystore();
     return ks.listWallets();
+  }
+
+  /** Poll for transaction receipt via raw RPC (avoids ethers.js log-parsing issues on QFC) */
+  private async waitForReceipt(
+    txHash: string,
+    timeoutMs: number = 120_000,
+  ): Promise<{ status: string; blockNumber: string }> {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 3000));
+      const raw = await this.provider.send('eth_getTransactionReceipt', [txHash]);
+      if (raw) return raw;
+    }
+    throw new Error(`Transaction ${txHash} not confirmed after ${timeoutMs / 1000}s`);
+  }
+
+  /**
+   * Batch send native QFC to multiple addresses sequentially.
+   * @param recipients - array of {to, amount} objects (amount in QFC, e.g. "10")
+   * @param signer - wallet to sign the transactions
+   */
+  async batchSend(
+    recipients: BatchTransferItem[],
+    signer: ethers.Wallet,
+  ): Promise<BatchTransferResult> {
+    const connected = signer.connect(this.provider);
+    const result: BatchTransferResult = { successful: [], failed: [] };
+
+    for (const recipient of recipients) {
+      try {
+        if (!ethers.isAddress(recipient.to)) {
+          result.failed.push({ to: recipient.to, amount: recipient.amount, error: 'Invalid address format' });
+          continue;
+        }
+        const tx = await connected.sendTransaction({
+          to: recipient.to,
+          value: ethers.parseEther(recipient.amount),
+        });
+        const receipt = await this.waitForReceipt(tx.hash);
+        if (receipt.status !== '0x1') {
+          result.failed.push({ to: recipient.to, amount: recipient.amount, error: 'Transaction reverted' });
+        } else {
+          result.successful.push({ to: recipient.to, amount: recipient.amount, txHash: tx.hash });
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        result.failed.push({ to: recipient.to, amount: recipient.amount, error: message });
+      }
+    }
+
+    return result;
   }
 
   private requireWallet(): ethers.Wallet {

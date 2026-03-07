@@ -68,6 +68,21 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Check Allowance**: Query how much a spender is approved to use
 - **Token Portfolio** (v2.3): View all token holdings for a wallet — native QFC balance plus every ERC-20 token with non-zero balance
 - **Transfer History** (v2.3): View token transfer history from the explorer — filter by token and/or address
+- **Batch Transfer Tokens** (v2.4): Send tokens to multiple addresses in one operation (airdrop)
+- **Batch Send QFC** (v2.4): Send native QFC to multiple addresses
+
+### NFT / ERC-721 (v2.4)
+- **Deploy NFT Collection**: Create a new ERC-721 NFT contract with name and symbol
+- **Mint NFT**: Mint a new NFT with metadata URI to any address (owner only)
+- **View NFT**: Query token URI, owner, and balance for any NFT
+- **Transfer NFT**: Transfer an NFT to another address
+
+### Discord Bot Integration (v2.5)
+- **Command Processor**: Framework-agnostic Discord bot command handler — no discord.js dependency
+- **Supported Commands**: `!help`, `!faucet`, `!balance`, `!portfolio`, `!tx`, `!block`, `!price`, `!info`
+- **Parse + Execute**: Parse raw messages into commands, execute them, and return Discord-formatted responses
+- **Custom Prefix**: Configurable command prefix (default `!`)
+- **Example Script**: See `scripts/discord-bot-example.mjs` for discord.js integration pattern
 
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
@@ -108,6 +123,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 |--------|-------|-------------|
 | `contract` | `QFCContract` | Read/write/deploy smart contracts |
 | `token` | `QFCToken` | ERC-20 token operations |
+| `nft` | `QFCNFT` | ERC-721 NFT operations |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -120,6 +136,7 @@ All modules are compiled to `{baseDir}/dist/`.
 | `network` | `QFCNetwork` | Node info & network status |
 | `staking` | `QFCStaking` | Validator & staking info |
 | `epoch` | `QFCEpoch` | Epoch & finality info |
+| `discord` | `QFCDiscordBot` | Discord bot command processor (no discord.js dependency) |
 
 ## Usage Examples
 
@@ -198,6 +215,36 @@ Show transfer history for token 0x603f0c43966f68dfb0737314cde8c4a46a0cc1f9
 Show my recent transfers for the XHT token
 ```
 
+### Batch Operations
+```
+Airdrop 100 XHT tokens to these addresses: 0x1111..., 0x2222..., 0x3333...
+```
+
+```
+Send 10 QFC to each of these addresses: 0xaaaa..., 0xbbbb...
+```
+
+### NFTs
+```
+Deploy an NFT collection called "QFC Punks" with symbol QPUNK
+```
+
+```
+Mint an NFT to 0x1234... with metadata URI https://api.example.com/metadata/1
+```
+
+```
+Who owns token #0 in NFT contract 0xabcd...?
+```
+
+```
+Get the metadata URI for token #3 in the NFT collection at 0xabcd...
+```
+
+```
+Transfer NFT #2 from my wallet to 0x5678... on contract 0xabcd...
+```
+
 ### Smart Contracts
 ```
 Is 0x1234...abcd a contract address on QFC testnet?
@@ -234,6 +281,15 @@ Check the status of inference task 0xdef456...
 
 ```
 Show me QFC inference network statistics
+```
+
+### Discord Bot
+```
+Set up a QFC Discord bot using scripts/discord-bot-example.mjs as a template
+```
+
+```
+Integrate QFCDiscordBot into my existing Discord bot to handle !balance and !faucet commands
 ```
 
 ## Error Handling

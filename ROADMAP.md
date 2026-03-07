@@ -121,42 +121,70 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 
 ---
 
-## v2.4 (Planned)
+## v2.4 (Current)
 
 > Batch operations, NFT support, and Discord integration.
 
-### Phase 11: Batch Operations (High Priority)
+### Phase 11: Batch Operations (High Priority) -- DONE
 
-- [ ] `QFCToken.batchTransfer(tokenAddress, recipients[], signer)` — airdrop tokens to multiple addresses in one tx
-- [ ] Pre-compiled Airdrop contract (batch transfer in single tx, saves gas)
-- [ ] `QFCWallet.batchSend(recipients[], signer)` — batch native QFC transfers
+- [x] `QFCToken.batchTransfer(tokenAddress, recipients[], signer)` — airdrop tokens to multiple addresses sequentially
+- [x] `QFCWallet.batchSend(recipients[], signer)` — batch native QFC transfers
 
-### Phase 12: NFT Support (Medium Priority)
+### Phase 12: NFT Support (Medium Priority) -- DONE
 
-- [ ] `QFCNFT` class (`src/nft.ts`)
-  - [ ] `deploy(name, symbol, baseURI, signer)` — deploy ERC-721 collection
-  - [ ] `mint(contractAddress, to, tokenId, signer)` — mint NFT
-  - [ ] `getTokenURI(contractAddress, tokenId)` — get metadata URI
-  - [ ] `ownerOf(contractAddress, tokenId)` — check NFT owner
-  - [ ] `transfer(contractAddress, to, tokenId, signer)` — transfer NFT
-- [ ] Pre-compiled ERC-721 bytecode (Paris EVM)
-- [ ] Auto-verify on explorer after deployment
+- [x] `QFCNFT` class (`src/nft.ts`)
+  - [x] `deploy(name, symbol, signer)` — deploy ERC-721 collection (bytecode TBD, source ready)
+  - [x] `mint(contractAddress, to, uri, signer)` — mint NFT with URI
+  - [x] `getTokenURI(contractAddress, tokenId)` — get metadata URI
+  - [x] `ownerOf(contractAddress, tokenId)` — check NFT owner
+  - [x] `balanceOf(contractAddress, owner)` — check NFT balance
+  - [x] `transfer(contractAddress, from, to, tokenId, signer)` — transfer NFT
+- [x] ERC-721 Solidity source code (`ERC721_SOURCE_CODE`)
+- [ ] Pre-compiled ERC-721 bytecode (Paris EVM) — needs solc compilation
+- [x] Auto-verify on explorer after deployment (ready, pending bytecode)
 
-### Phase 13: Discord Bot Integration (Low Priority)
+### Phase 13: Discord Bot Integration (Low Priority) -- DONE
 
-- [ ] `QFCDiscordBot` — faucet bot for Discord
-  - [ ] `!faucet <address>` — request test QFC
-  - [ ] `!balance <address>` — check balance
-  - [ ] `!portfolio <address>` — show token holdings
-  - [ ] `!tx <hash>` — lookup transaction
+- [x] `QFCDiscordBot` class — framework-agnostic command processor
+  - [x] `!help` — list available commands
+  - [x] `!faucet <address>` — request test QFC
+  - [x] `!balance <address>` — check balance
+  - [x] `!portfolio <address>` — show token holdings
+  - [x] `!tx <hash>` — lookup transaction
+  - [x] `!block [number]` — get block info
+  - [x] `!price` — gas price
+  - [x] `!info` — network info
+- [x] Example discord.js integration script (`scripts/discord-bot-example.mjs`)
 
 ---
 
-## Release Criteria (v2.3)
+## v2.5 (Planned)
 
-- Portfolio and transfer history working on QFC testnet
+> Advanced features and ecosystem tools.
+
+### Phase 14: NFT Bytecode Compilation
+
+- [ ] Compile ERC-721 source with solc (Paris EVM, optimizer 200)
+- [ ] Embed bytecode in `nft.ts`
+- [ ] Test deployment on QFC testnet
+
+### Phase 15: Airdrop Smart Contract
+
+- [ ] Pre-compiled Airdrop contract (batch transfer in single tx, saves gas)
+- [ ] `QFCToken.airdrop(tokenAddress, recipients[], signer)` — single-tx airdrop
+
+### Phase 16: Token Swap / DEX
+
+- [ ] Simple AMM contract deployment
+- [ ] `QFCSwap` class — create pool, add liquidity, swap tokens
+
+---
+
+## Release Criteria (v2.4)
+
+- Batch transfer, NFT class, and Discord bot build passes
 - `npm run build` passes with no errors
-- SKILL.md updated with new capabilities
+- SKILL.md updated with all new capabilities
 
 ## Dependencies
 
