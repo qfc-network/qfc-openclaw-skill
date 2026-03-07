@@ -96,12 +96,14 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Launch Token**: One-command token launch — deploy token + deploy WQFC pool + add initial liquidity. Returns token address, pool address, and LP details.
 
 ### NFT Marketplace (v3.0)
-- **Deploy Marketplace**: Deploy an on-chain NFT marketplace contract (payment in native QFC)
+- **Deploy Marketplace**: Deploy an on-chain NFT marketplace contract with configurable platform fee (default 2%, max 10%). Fee is deducted from sale price and sent to feeRecipient.
 - **List NFT**: List an NFT for sale with a price in QFC (auto-approves marketplace)
-- **Buy NFT**: Purchase a listed NFT by sending QFC (auto-refunds excess)
+- **Buy NFT**: Purchase a listed NFT by sending QFC (platform fee auto-deducted, excess auto-refunded)
 - **Cancel Listing**: Cancel an active listing (seller only)
 - **View Listings**: Get all active listings or filter by NFT collection
 - **Get Listing**: View details of a specific listing
+- **Get Fee Info**: Query current platform fee (basis points) and fee recipient
+- **Set Fee**: Update platform fee and/or recipient (marketplace owner only)
 
 ### Multi-Call (v3.0)
 - **Deploy Multicall3**: Deploy a batch-call contract for aggregating view calls
@@ -345,7 +347,11 @@ Launch a new token called "Moon Coin" (MOON) with 1M supply, add 100k tokens and
 
 ### NFT Marketplace
 ```
-Deploy an NFT marketplace on QFC testnet
+Deploy an NFT marketplace on QFC testnet with 2% platform fee
+```
+
+```
+Deploy a marketplace with 5% fee sent to 0xFEE...
 ```
 
 ```
@@ -358,6 +364,10 @@ Buy listing #0 on marketplace 0xMKT...
 
 ```
 Show all active NFT listings on marketplace 0xMKT...
+```
+
+```
+Check the platform fee on marketplace 0xMKT...
 ```
 
 ### Multi-Call
