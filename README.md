@@ -1,6 +1,22 @@
 # QFC OpenClaw Skill
 
+[![ClawHub](https://img.shields.io/badge/ClawHub-qfc-blue)](https://clawhub.ai/lai3d/qfc)
+
 AI agent skill for interacting with the QFC blockchain. Provides wallet management, chain queries, staking info, and more — with built-in security policies.
+
+## Install
+
+```bash
+clawhub install qfc
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/qfc-network/qfc-openclaw-skill.git
+cd qfc-openclaw-skill
+npm install && npm run build
+```
 
 ## Features
 
@@ -30,13 +46,6 @@ AI agent skill for interacting with the QFC blockchain. Provides wallet manageme
 ### Security
 - Pre-transaction checks (amount limits, address validation, daily caps)
 - Private keys / mnemonics never exposed in output
-
-## Setup
-
-```bash
-npm install
-npm run build
-```
 
 ## Modules
 
