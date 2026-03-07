@@ -107,6 +107,12 @@ export class QFCKeystore {
     const keystorePath = path.join(this.keystoreDir, `${normalised}.json`);
 
     if (!fs.existsSync(keystorePath)) return null;
-    return fs.readFileSync(keystorePath, 'utf-8');
+    const raw = fs.readFileSync(keystorePath, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (parsed.Crypto && !parsed.crypto) {
+      parsed.crypto = parsed.Crypto;
+      delete parsed.Crypto;
+    }
+    return JSON.stringify(parsed);
   }
 }
