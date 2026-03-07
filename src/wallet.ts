@@ -1,7 +1,5 @@
 import { ethers } from 'ethers';
-import networks from '../config/qfc-networks.json' with { type: 'json' };
-
-type NetworkName = 'testnet' | 'mainnet';
+import { NetworkName, createProvider, getNetworkConfig } from './provider.js';
 
 interface WalletCreationResult {
   address: string;
@@ -26,21 +24,18 @@ export class QFCWallet {
   private provider: ethers.JsonRpcProvider;
   private wallet: ethers.Wallet | null = null;
   private network: NetworkName;
-  private networkConfig: typeof networks.testnet;
+  private networkConfig;
 
   constructor(network: NetworkName = 'testnet') {
     this.network = network;
-    this.networkConfig = networks[network];
-    this.provider = new ethers.JsonRpcProvider(
-      this.networkConfig.rpcUrl,
-      this.networkConfig.chainId,
-    );
+    this.networkConfig = getNetworkConfig(network);
+    this.provider = createProvider(network);
   }
 
   /** Create a new random wallet */
   createWallet(): WalletCreationResult {
     const hdWallet = ethers.Wallet.createRandom();
-    this.wallet = hdWallet.connect(this.provider);
+    this.wallet = new ethers.Wallet(hdWallet.privateKey, this.provider);
     return {
       address: hdWallet.address,
       mnemonic: hdWallet.mnemonic!.phrase,

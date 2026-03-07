@@ -1,6 +1,6 @@
-# QFC Wallet Skill
+# QFC OpenClaw Skill
 
-> Phase 1 MVP — Wallet management for QFC blockchain
+> AI agent skill for full QFC blockchain interaction
 
 ## Capabilities
 
@@ -10,6 +10,30 @@
 - **Get Balance**: Query QFC balance for any address
 - **Send QFC**: Transfer QFC tokens to another address
 - **Sign Message**: Sign an arbitrary message with the wallet's private key
+
+### Faucet (Testnet Only)
+- **Request Test QFC**: Get test tokens on testnet (chain_id=9000)
+
+### Chain Queries
+- **Get Block Number**: Latest block height
+- **Get Block**: Block details by number or 'latest'
+- **Get Transaction**: Transaction info by hash
+- **Get Receipt**: Transaction receipt with logs
+
+### Network Status
+- **Node Info**: Version, chain ID, peer count, validator status
+- **Network State**: Current network condition (normal/congested)
+- **Chain ID / Block Number / Gas Price**: Basic network parameters
+
+### Staking & Validators
+- **List Validators**: All validators with stake, score, and compute mode
+- **Get Stake**: Staked QFC amount for an address
+- **Contribution Score**: Validator score (0-10000)
+- **Score Breakdown**: Detailed 7-dimension scoring with metrics
+
+### Epoch & Finality
+- **Current Epoch**: Epoch number, start time, duration
+- **Finalized Block**: Latest finalized block number
 
 ## Security Rules
 
@@ -27,42 +51,44 @@ Testnet RPC: https://rpc.testnet.qfc.network (chain ID: 9000)
 Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 ```
 
-### Wallet Setup
-1. Create or import a wallet
-2. Fund via faucet (testnet) or transfer (mainnet)
-3. Verify balance before operations
-
 ### Environment Variables
 - `QFC_NETWORK` — "testnet" (default) or "mainnet"
 - `QFC_RPC_URL` — Override RPC endpoint
 
+## Modules
+
+| Module | Class | Description |
+|--------|-------|-------------|
+| `provider` | — | Shared provider creation & RPC helper |
+| `wallet` | `QFCWallet` | Wallet create/import/balance/send/sign |
+| `security` | `SecurityPolicy` | Pre-transaction safety checks |
+| `faucet` | `QFCFaucet` | Testnet token requests |
+| `chain` | `QFCChain` | Block, transaction, receipt queries |
+| `network` | `QFCNetwork` | Node info & network status |
+| `staking` | `QFCStaking` | Validator & staking info |
+| `epoch` | `QFCEpoch` | Epoch & finality info |
+
 ## Usage Examples
 
-### Create a wallet
+### Create a wallet and get test tokens
 ```
-Create a new QFC wallet on testnet
-```
-
-### Check balance
-```
-What is the QFC balance of 0x742d35Cc6634C0532925a3b844Bc9e7595f12345?
+Create a new QFC wallet on testnet and request 10 QFC from the faucet
 ```
 
-### Send tokens
+### Check network status
 ```
-Send 10 QFC to 0x742d35Cc6634C0532925a3b844Bc9e7595f12345
+What's the current QFC testnet status? Show me node info and latest block.
 ```
 
-## Limitations (Phase 1)
+### Query validators
+```
+List all QFC validators and their contribution scores
+```
 
-- No DeFi operations (swap, liquidity, yield)
-- No staking/delegation
-- No smart contract interaction
-- No multi-sig support
-- No transaction monitoring/alerts
-- No governance voting
-
-These will be added in future phases.
+### Check transaction
+```
+Look up transaction 0xabc... on QFC testnet — show me the receipt
+```
 
 ## Error Handling
 
@@ -72,3 +98,4 @@ These will be added in future phases.
 | INVALID_ADDRESS | Bad recipient format | Verify 0x + 40 hex chars |
 | NETWORK_ERROR | RPC connection failed | Check RPC URL, retry |
 | NONCE_TOO_LOW | Transaction already sent | Wait for confirmation, retry |
+| FAUCET_TESTNET_ONLY | Faucet used on mainnet | Switch to testnet |
