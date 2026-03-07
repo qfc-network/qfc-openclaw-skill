@@ -103,20 +103,24 @@ export class QFCInference {
 
   /**
    * Submit a public inference task.
-   * @param model - model ID from the registry (e.g. "qfc-embed-small")
-   * @param input - input data (text string, base64 image, etc.)
+   * @param modelId - model ID from the registry (e.g. "qfc-embed-small")
+   * @param taskType - task type (e.g. "TextEmbedding", "TextGeneration")
+   * @param input - input data (text string — will be base64-encoded automatically)
    * @param maxFee - maximum fee in QFC (e.g. "0.5")
    * @param signer - wallet to sign and pay for the task
    */
   async submitTask(
-    model: string,
+    modelId: string,
+    taskType: string,
     input: string,
     maxFee: string,
     signer: ethers.Wallet,
   ): Promise<string> {
+    const inputData = Buffer.from(input).toString('base64');
     const payload = {
-      model,
-      input,
+      modelId,
+      taskType,
+      inputData,
       maxFee: ethers.parseEther(maxFee).toString(),
       submitter: signer.address,
     };
@@ -128,10 +132,10 @@ export class QFCInference {
     return result.taskId;
   }
 
-  /** Estimate the fee for an inference task */
-  async estimateFee(model: string, inputSize: number = 0): Promise<FeeEstimate> {
+  /** Estimate the fee for an inference task (note: may not be implemented on all nodes yet) */
+  async estimateFee(modelId: string, inputSize: number = 0): Promise<FeeEstimate> {
     const raw = await rpcCall(this.provider, 'qfc_estimateInferenceFee', [
-      { model, inputSize },
+      { modelId, inputSize },
     ]);
     return {
       baseFee: ethers.formatEther(raw.baseFee),
