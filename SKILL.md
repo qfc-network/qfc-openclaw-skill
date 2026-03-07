@@ -57,7 +57,9 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Get Code**: Retrieve raw bytecode at an address
 
 ### ERC-20 Tokens (v2.1)
-- **Deploy Token**: Create a new ERC-20 token on QFC — specify name, symbol, and initial supply. All tokens are minted to the deployer. No compiler needed (pre-compiled bytecode).
+- **Deploy Token**: Create a new ERC-20 token on QFC — specify name, symbol, and initial supply. All tokens are minted to the deployer. No compiler needed (pre-compiled bytecode). Set `mintable: true` for a token with mint/burn/owner support.
+- **Mint Tokens**: Mint new tokens to any address (mintable tokens only, caller must be owner)
+- **Burn Tokens**: Burn tokens from your balance (reduces total supply, mintable tokens only)
 - **Token Info**: Get name, symbol, decimals, and total supply of any ERC-20 token
 - **Token Balance**: Check token balance for any address
 - **Transfer Tokens**: Send ERC-20 tokens to another address (auto-handles decimals)
@@ -150,6 +152,18 @@ Create a new token called "My Token" with symbol MTK and 1 million supply on QFC
 
 ```
 Deploy an ERC-20 token named "QFC Rewards" (symbol: QREW) with 10 million supply
+```
+
+```
+Create a mintable token called "Game Gold" with symbol GOLD and 0 initial supply
+```
+
+```
+Mint 5000 GOLD tokens to address 0x1234...
+```
+
+```
+Burn 100 of my GOLD tokens
 ```
 
 ```

@@ -79,13 +79,16 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
   - Gas cost estimates and testnet vs mainnet considerations
   - Known QFC EVM quirks (Paris EVM target required, eth_call limitations)
 
-### Phase 7: Token Management (Medium Priority)
+### Phase 7: Token Management (Medium Priority) -- DONE
 
-- [ ] `QFCToken.mint(tokenAddress, to, amount, signer)` — mint new tokens (if mintable)
-- [ ] `QFCToken.burn(tokenAddress, amount, signer)` — burn tokens
-- [ ] Mintable/Burnable token template (optional constructor flag)
-- [ ] `QFCToken.getDeployedTokens(owner)` — list tokens deployed by an address
-  - Query explorer indexer or scan deployment transactions
+- [x] `QFCToken.mint(tokenAddress, to, amount, signer)` — mint new tokens (if mintable)
+- [x] `QFCToken.burn(tokenAddress, amount, signer)` — burn tokens
+- [x] Mintable/Burnable token template (`deploy()` with `mintable: true` flag)
+  - MintableToken contract: owner, mint(onlyOwner), burn(anyone), transferOwnership
+  - Pre-compiled bytecode (Paris EVM, optimizer 200 runs)
+  - Exported `MINTABLE_SOURCE_CODE` for explorer verification
+- [x] `QFCToken.getDeployedTokens(owner)` — list tokens deployed by an address
+  - Uses CREATE address derivation + eth_getCode to find contracts at each nonce
 
 ### Phase 8: Explorer Contract Verification (Low Priority)
 
