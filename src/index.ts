@@ -10,6 +10,6 @@ export { QFCEpoch } from './epoch.js';
 export { QFCInference } from './inference.js';
 export { QFCContract } from './contract.js';
 export { QFCToken, ERC20_SOURCE_CODE, MINTABLE_SOURCE_CODE } from './token.js';
-export type { DeployTokenResult } from './token.js';
+export type { DeployTokenResult, PortfolioResult, PortfolioItem, TransferHistoryResult, TokenTransfer } from './token.js';
 export { createProvider, getNetworkConfig, rpcCall } from './provider.js';
 export type { NetworkName, NetworkConfig } from './provider.js';

@@ -100,15 +100,67 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 
 ---
 
-## Release Criteria (v2.2)
+## v2.3 (Current)
 
-- Token deployment tested on QFC testnet (Paris EVM bytecode)
+> Portfolio & transfer history — let users see all their token holdings and track transfers.
+
+### Phase 9: Token Portfolio (High Priority) -- DONE
+
+- [x] `QFCToken.getPortfolio(owner)` — native QFC balance + all ERC-20 token balances
+  - Fetches known token list from explorer `/api/tokens`
+  - Queries `balanceOf` for each token in parallel
+  - Filters to non-zero balances only
+  - Returns native balance + token list with formatted amounts
+
+### Phase 10: Transfer History (High Priority) -- DONE
+
+- [x] `QFCToken.getTransferHistory(tokenAddress, address?, page?, limit?)` — token transfer history
+  - Fetches from explorer `/api/tokens/:address` endpoint
+  - Optional address filter (sender or receiver)
+  - Paginated results with token symbol
+
+---
+
+## v2.4 (Planned)
+
+> Batch operations, NFT support, and Discord integration.
+
+### Phase 11: Batch Operations (High Priority)
+
+- [ ] `QFCToken.batchTransfer(tokenAddress, recipients[], signer)` — airdrop tokens to multiple addresses in one tx
+- [ ] Pre-compiled Airdrop contract (batch transfer in single tx, saves gas)
+- [ ] `QFCWallet.batchSend(recipients[], signer)` — batch native QFC transfers
+
+### Phase 12: NFT Support (Medium Priority)
+
+- [ ] `QFCNFT` class (`src/nft.ts`)
+  - [ ] `deploy(name, symbol, baseURI, signer)` — deploy ERC-721 collection
+  - [ ] `mint(contractAddress, to, tokenId, signer)` — mint NFT
+  - [ ] `getTokenURI(contractAddress, tokenId)` — get metadata URI
+  - [ ] `ownerOf(contractAddress, tokenId)` — check NFT owner
+  - [ ] `transfer(contractAddress, to, tokenId, signer)` — transfer NFT
+- [ ] Pre-compiled ERC-721 bytecode (Paris EVM)
+- [ ] Auto-verify on explorer after deployment
+
+### Phase 13: Discord Bot Integration (Low Priority)
+
+- [ ] `QFCDiscordBot` — faucet bot for Discord
+  - [ ] `!faucet <address>` — request test QFC
+  - [ ] `!balance <address>` — check balance
+  - [ ] `!portfolio <address>` — show token holdings
+  - [ ] `!tx <hash>` — lookup transaction
+
+---
+
+## Release Criteria (v2.3)
+
+- Portfolio and transfer history working on QFC testnet
 - `npm run build` passes with no errors
-- SKILL.md updated with deploy-token capability
-- Explorer verification API functional (Phase 8)
+- SKILL.md updated with new capabilities
 
 ## Dependencies
 
-- QFC testnet RPC operational
+- QFC testnet RPC operational (eth_call must support storage reads)
+- QFC explorer API `/api/tokens` endpoint operational
 - Pre-compiled ERC-20 bytecode (Solidity 0.8.x, evmVersion: paris)
 - Explorer contract verification API (for Phase 8)

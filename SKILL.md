@@ -66,6 +66,8 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Transfer Tokens**: Send ERC-20 tokens to another address (auto-handles decimals)
 - **Approve Spender**: Approve a contract/address to spend tokens (supports "max" for unlimited)
 - **Check Allowance**: Query how much a spender is approved to use
+- **Token Portfolio** (v2.3): View all token holdings for a wallet — native QFC balance plus every ERC-20 token with non-zero balance
+- **Transfer History** (v2.3): View token transfer history from the explorer — filter by token and/or address
 
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
@@ -177,6 +179,23 @@ Check my token balance for 0xabcd... token
 
 ```
 Transfer 50 tokens (0xabcd...) to 0x5678...
+```
+
+### Token Portfolio & History
+```
+Show me all token balances for address 0xfe913E97238B28abac7a55173f5878fD29147210
+```
+
+```
+What tokens does my wallet hold on QFC testnet?
+```
+
+```
+Show transfer history for token 0x603f0c43966f68dfb0737314cde8c4a46a0cc1f9
+```
+
+```
+Show my recent transfers for the XHT token
 ```
 
 ### Smart Contracts

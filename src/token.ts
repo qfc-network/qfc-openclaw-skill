@@ -188,6 +188,40 @@ export interface TokenInfo {
   totalSupply: string;
 }
 
+export interface PortfolioItem {
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  balance: string;
+  raw: string;
+}
+
+export interface PortfolioResult {
+  owner: string;
+  nativeBalance: string;
+  tokens: PortfolioItem[];
+}
+
+export interface TokenTransfer {
+  txHash: string;
+  blockHeight: number;
+  from: string;
+  to: string;
+  value: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+}
+
+export interface TransferHistoryResult {
+  address: string;
+  tokenAddress: string;
+  tokenSymbol: string;
+  transfers: TokenTransfer[];
+  page: number;
+  limit: number;
+}
+
 export interface TokenBalance {
   token: string;
   symbol: string;
@@ -503,5 +537,126 @@ export class QFCToken {
       contract.allowance(owner, spender),
     ]);
     return ethers.formatUnits(allowance, decimals);
+  }
+
+  /**
+   * Get token portfolio for an address — native QFC balance plus all known ERC-20 token balances.
+   * Fetches the token list from the explorer API, then queries balanceOf for each token.
+   * @param owner - wallet address to check
+   */
+  async getPortfolio(owner: string): Promise<PortfolioResult> {
+    const nativeBalance = await this.provider.getBalance(owner);
+
+    // Fetch known tokens from explorer
+    let tokenAddresses: { address: string; name: string | null; symbol: string | null; decimals: number | null }[] = [];
+    try {
+      const response = await fetch(
+        `${this.networkConfig.explorerUrl}/api/tokens?limit=100`,
+      );
+      const data = await response.json();
+      if (data.ok && data.data?.items) {
+        tokenAddresses = data.data.items;
+      }
+    } catch {
+      // Explorer unavailable — fall back to empty list
+    }
+
+    // Query balanceOf for each token in parallel
+    const tokens: PortfolioItem[] = [];
+    const results = await Promise.allSettled(
+      tokenAddresses.map(async (token) => {
+        const contract = new ethers.Contract(token.address, ERC20_ABI, this.provider);
+        const [balance, name, symbol, decimals] = await Promise.all([
+          contract.balanceOf(owner),
+          token.name ?? contract.name(),
+          token.symbol ?? contract.symbol(),
+          token.decimals ?? contract.decimals(),
+        ]);
+        return { address: token.address, name, symbol, decimals: Number(decimals), balance };
+      }),
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        const { address, name, symbol, decimals, balance } = result.value;
+        if (balance > 0n) {
+          tokens.push({
+            address,
+            name,
+            symbol,
+            decimals,
+            balance: ethers.formatUnits(balance, decimals),
+            raw: balance.toString(),
+          });
+        }
+      }
+    }
+
+    return {
+      owner,
+      nativeBalance: ethers.formatEther(nativeBalance),
+      tokens,
+    };
+  }
+
+  /**
+   * Get transfer history for a specific token, filtered by address.
+   * Uses the explorer API to fetch token transfer events.
+   * @param tokenAddress - ERC-20 token contract address
+   * @param address - filter transfers involving this address (sender or receiver)
+   * @param page - page number (default 1)
+   * @param limit - results per page (default 20)
+   */
+  async getTransferHistory(
+    tokenAddress: string,
+    address?: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<TransferHistoryResult> {
+    // Get token symbol for display
+    let tokenSymbol = '';
+    try {
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+      tokenSymbol = await contract.symbol();
+    } catch {
+      tokenSymbol = 'UNKNOWN';
+    }
+
+    // Fetch transfers from explorer
+    const transfers: TokenTransfer[] = [];
+    try {
+      const response = await fetch(
+        `${this.networkConfig.explorerUrl}/api/tokens/${tokenAddress}?page=${page}&limit=${limit}`,
+      );
+      const data = await response.json();
+      if (data.ok && data.data?.transfers) {
+        for (const tx of data.data.transfers) {
+          // Filter by address if specified
+          if (address && tx.from_address !== address && tx.to_address !== address) {
+            continue;
+          }
+          transfers.push({
+            txHash: tx.tx_hash,
+            blockHeight: Number(tx.block_height),
+            from: tx.from_address,
+            to: tx.to_address,
+            value: tx.value,
+            tokenAddress,
+            tokenSymbol,
+          });
+        }
+      }
+    } catch {
+      // Explorer unavailable
+    }
+
+    return {
+      address: address ?? '',
+      tokenAddress,
+      tokenSymbol,
+      transfers,
+      page,
+      limit,
+    };
   }
 }
