@@ -18,6 +18,13 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Send QFC**: Transfer QFC tokens to another address
 - **Sign Message**: Sign an arbitrary message with the wallet's private key
 
+### Wallet Persistence
+- **Save Wallet**: Encrypt and persist a wallet to disk (`~/.openclaw/qfc-wallets/`) using industry-standard keystore format (scrypt KDF, compatible with MetaMask/Geth)
+- **Load Wallet**: Decrypt and restore a previously saved wallet by address + password
+- **List Saved Wallets**: Show all persisted wallets (address, name, network) without needing a password
+- **Remove Wallet**: Delete a saved wallet's keystore file and metadata
+- **Export Keystore JSON**: Get the encrypted keystore JSON for a saved wallet (for import into MetaMask or other tools)
+
 ### Faucet (Testnet Only)
 - **Request Test QFC**: Get test tokens on testnet (chain_id=9000)
 
@@ -67,7 +74,8 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | Module | Class | Description |
 |--------|-------|-------------|
 | `provider` | — | Shared provider creation & RPC helper |
-| `wallet` | `QFCWallet` | Wallet create/import/balance/send/sign |
+| `wallet` | `QFCWallet` | Wallet create/import/balance/send/sign/save/load |
+| `keystore` | `QFCKeystore` | Encrypted wallet persistence (scrypt keystore) |
 | `security` | `SecurityPolicy` | Pre-transaction safety checks |
 | `faucet` | `QFCFaucet` | Testnet token requests |
 | `chain` | `QFCChain` | Block, transaction, receipt queries |
@@ -77,9 +85,14 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 
 ## Usage Examples
 
-### Create a wallet and get test tokens
+### Create a wallet, save it, and get test tokens
 ```
-Create a new QFC wallet on testnet and request 10 QFC from the faucet
+Create a new QFC wallet on testnet, save it with password "mypass", then request 10 QFC from the faucet
+```
+
+### Load a saved wallet
+```
+List my saved QFC wallets and load the first one with password "mypass"
 ```
 
 ### Check network status

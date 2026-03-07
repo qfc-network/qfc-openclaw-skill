@@ -1,4 +1,6 @@
 export { QFCWallet } from './wallet.js';
+export { QFCKeystore } from './keystore.js';
+export type { WalletMeta } from './keystore.js';
 export { SecurityPolicy } from './security.js';
 export { QFCFaucet } from './faucet.js';
 export { QFCChain } from './chain.js';

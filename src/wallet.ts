@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { NetworkName, createProvider, getNetworkConfig } from './provider.js';
+import { QFCKeystore, type WalletMeta } from './keystore.js';
 
 interface WalletCreationResult {
   address: string;
@@ -90,6 +91,32 @@ export class QFCWallet {
   /** Get the current wallet address */
   get address(): string | null {
     return this.wallet?.address ?? null;
+  }
+
+  /** Save current wallet to encrypted keystore on disk */
+  async save(password: string, name?: string): Promise<void> {
+    const wallet = this.requireWallet();
+    const ks = new QFCKeystore();
+    await ks.saveWallet(wallet, password, { name, network: this.network });
+  }
+
+  /** Load a wallet from encrypted keystore */
+  static async load(
+    address: string,
+    password: string,
+    network: NetworkName = 'testnet',
+  ): Promise<QFCWallet> {
+    const ks = new QFCKeystore();
+    const raw = await ks.loadWallet(address, password);
+    const instance = new QFCWallet(network);
+    instance.importWallet(raw.privateKey);
+    return instance;
+  }
+
+  /** List all saved wallets (no password needed) */
+  static listSaved(): WalletMeta[] {
+    const ks = new QFCKeystore();
+    return ks.listWallets();
   }
 
   private requireWallet(): ethers.Wallet {
