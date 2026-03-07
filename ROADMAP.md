@@ -90,13 +90,13 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 - [x] `QFCToken.getDeployedTokens(owner)` — list tokens deployed by an address
   - Uses CREATE address derivation + eth_getCode to find contracts at each nonce
 
-### Phase 8: Explorer Contract Verification (Low Priority)
+### Phase 8: Explorer Contract Verification (Low Priority) -- DONE
 
-- [ ] Explorer: add contract source code verification API (`POST /api/contracts/verify`)
-- [ ] Explorer: DB migration for `source_code`, `abi`, `compiler_version`, `is_verified` fields
-- [ ] `QFCContract.verify(address, sourceCode, compilerVersion, evmVersion)` — submit source for verification
-- [ ] After token deployment, auto-submit source code to explorer for verification
-- [ ] Verified contracts show source code and ABI on explorer contract page
+- [x] Explorer: add contract source code verification API (`POST /api/contracts/verify`)
+- [x] Explorer: DB migration for `source_code`, `abi`, `compiler_version`, `is_verified` fields
+- [x] `QFCContract.verify(address, sourceCode, compilerVersion, evmVersion)` — submit source for verification
+- [x] After token deployment, auto-submit source code to explorer for verification
+- [x] Verified contracts show source code and ABI on explorer contract page
 
 ---
 

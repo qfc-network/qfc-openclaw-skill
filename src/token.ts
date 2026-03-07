@@ -211,6 +211,7 @@ export interface DeployTokenResult {
   totalSupply: string;
   owner: string;
   mintable: boolean;
+  verified?: boolean;
 }
 
 /**
@@ -273,7 +274,7 @@ export class QFCToken {
       throw new Error(`Deploy transaction reverted (tx: ${tx.hash})`);
     }
 
-    return {
+    const result: DeployTokenResult = {
       contractAddress: receipt.contractAddress,
       txHash: tx.hash,
       explorerUrl: `${this.networkConfig.explorerUrl}/contract/${receipt.contractAddress}`,
@@ -284,6 +285,38 @@ export class QFCToken {
       owner: signer.address,
       mintable,
     };
+
+    // Auto-verify on explorer (best-effort, don't fail deployment if verification fails)
+    try {
+      const sourceCode = mintable ? MINTABLE_SOURCE_CODE : ERC20_SOURCE_CODE;
+      const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+      const constructorArgs = abiCoder.encode(
+        ['string', 'string', 'uint256'],
+        [name, symbol, supplyWei],
+      ).slice(2); // remove 0x prefix
+
+      const verifyResponse = await fetch(
+        `${this.networkConfig.explorerUrl}/api/contracts/verify`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: receipt.contractAddress,
+            sourceCode,
+            compilerVersion: 'v0.8.34',
+            evmVersion: 'paris',
+            optimizationRuns: 200,
+            constructorArgs,
+          }),
+        },
+      );
+      const verifyData = await verifyResponse.json();
+      result.verified = verifyData.ok && verifyData.data?.verified;
+    } catch {
+      result.verified = false;
+    }
+
+    return result;
   }
 
   /**

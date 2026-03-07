@@ -55,9 +55,10 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Deploy Contract**: Deploy a new contract from ABI + bytecode
 - **Check Contract**: Verify if an address has contract code deployed
 - **Get Code**: Retrieve raw bytecode at an address
+- **Verify Contract**: Submit source code to QFC explorer for verification (compiler version, EVM version, optimizer settings)
 
 ### ERC-20 Tokens (v2.1)
-- **Deploy Token**: Create a new ERC-20 token on QFC — specify name, symbol, and initial supply. All tokens are minted to the deployer. No compiler needed (pre-compiled bytecode). Set `mintable: true` for a token with mint/burn/owner support.
+- **Deploy Token**: Create a new ERC-20 token on QFC — specify name, symbol, and initial supply. All tokens are minted to the deployer. No compiler needed (pre-compiled bytecode). Set `mintable: true` for a token with mint/burn/owner support. Auto-verifies source code on QFC explorer after deployment.
 - **Mint Tokens**: Mint new tokens to any address (mintable tokens only, caller must be owner)
 - **Burn Tokens**: Burn tokens from your balance (reduces total supply, mintable tokens only)
 - **Token Info**: Get name, symbol, decimals, and total supply of any ERC-20 token
@@ -189,6 +190,10 @@ Read the name() and symbol() of ERC-20 contract 0xabcd...
 
 ```
 Call the balanceOf method on contract 0xabcd... for address 0x1234...
+```
+
+```
+Verify the source code for contract 0xabcd... on the QFC explorer
 ```
 
 ### AI Inference

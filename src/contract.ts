@@ -19,6 +19,14 @@ export interface DeployResult {
   explorerUrl: string;
 }
 
+export interface VerifyResult {
+  address: string;
+  verified: boolean;
+  contractName: string;
+  compiler: string;
+  evmVersion: string;
+}
+
 /**
  * QFCContract — read, write, and deploy smart contracts on QFC.
  */
@@ -136,5 +144,53 @@ export class QFCContract {
    */
   async getCode(address: string): Promise<string> {
     return this.provider.getCode(address);
+  }
+
+  /**
+   * Submit contract source code for verification on the QFC explorer.
+   * The explorer compiles the source, strips metadata, and compares against deployed bytecode.
+   *
+   * @param address - contract address to verify
+   * @param sourceCode - Solidity source code
+   * @param compilerVersion - e.g. "v0.8.28"
+   * @param evmVersion - e.g. "paris" (required for QFC, no PUSH0)
+   * @param optimizationRuns - optimizer runs (e.g. 200), omit for no optimization
+   * @param constructorArgs - ABI-encoded constructor arguments (hex), optional
+   */
+  async verify(
+    address: string,
+    sourceCode: string,
+    compilerVersion: string = 'v0.8.28',
+    evmVersion: string = 'paris',
+    optimizationRuns?: number,
+    constructorArgs?: string,
+  ): Promise<VerifyResult> {
+    const explorerUrl = this.networkConfig.explorerUrl;
+    const response = await fetch(`${explorerUrl}/api/contracts/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        address,
+        sourceCode,
+        compilerVersion,
+        evmVersion,
+        optimizationRuns,
+        constructorArgs,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || 'Verification failed');
+    }
+
+    return {
+      address: data.data.address,
+      verified: data.data.verified,
+      contractName: data.data.contractName,
+      compiler: data.data.compiler,
+      evmVersion: data.data.evmVersion,
+    };
   }
 }
