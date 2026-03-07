@@ -1,3 +1,10 @@
+---
+name: qfc-openclaw-skill
+description: QFC blockchain interaction — wallet, faucet, chain queries, staking, epoch & finality
+homepage: https://github.com/qfc-network/qfc-openclaw-skill
+metadata: {"openclaw":{"requires":{"bins":["node"]}}}
+---
+
 # QFC OpenClaw Skill
 
 > AI agent skill for full QFC blockchain interaction
