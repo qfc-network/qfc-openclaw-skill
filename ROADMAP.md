@@ -168,10 +168,16 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 - [x] Embed bytecode in `nft.ts`
 - [ ] Test deployment on QFC testnet
 
-### Phase 15: Airdrop Smart Contract
+### Phase 15: Airdrop Smart Contract -- DONE
 
-- [ ] Pre-compiled Airdrop contract (batch transfer in single tx, saves gas)
-- [ ] `QFCToken.airdrop(tokenAddress, recipients[], signer)` — single-tx airdrop
+- [x] Pre-compiled Airdrop contract (Solidity 0.8.34, paris, optimizer 200)
+  - `airdrop(token, recipients[], amounts[])` — variable amounts per recipient
+  - `airdropFixed(token, recipients[], amount)` — same amount to all (gas savings)
+  - Uses `transferFrom` — caller approves contract, then batch-sends in one tx
+- [x] `QFCToken.deployAirdrop(signer)` — deploy reusable Airdrop contract
+- [x] `QFCToken.airdrop(airdropContract, tokenAddress, recipients[], signer)` — single-tx airdrop
+  - Auto-approves airdrop contract if needed
+  - Auto-selects `airdropFixed` when all amounts are equal
 
 ### Phase 16: Token Swap / DEX
 

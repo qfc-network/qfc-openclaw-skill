@@ -50,6 +50,53 @@ const MINTABLE_DEPLOY_ABI = [
 ];
 
 /**
+ * Pre-compiled Airdrop contract bytecode (Solidity 0.8.34, evmVersion: paris, optimizer: 200 runs).
+ * No constructor args — deploy once, use for any ERC-20 token.
+ */
+const AIRDROP_DEPLOY_BYTECODE = '0x6080604052348015600f57600080fd5b506104ae8061001f6000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063025ff12f1461003b578063abdcd94814610050575b600080fd5b61004e61004936600461033e565b610063565b005b61004e61005e3660046103c4565b6101cd565b8281146100a95760405162461bcd60e51b815260206004820152600f60248201526e0d8cadccee8d040dad2e6dac2e8c6d608b1b60448201526064015b60405180910390fd5b8460005b848110156101c457816001600160a01b03166323b872dd338888858181106100d7576100d761041e565b90506020020160208101906100ec9190610434565b8787868181106100fe576100fe61041e565b6040516001600160e01b031960e088901b1681526001600160a01b039586166004820152949093166024850152506020909102013560448201526064016020604051808303816000875af115801561015a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061017e9190610456565b6101bc5760405162461bcd60e51b815260206004820152600f60248201526e1d1c985b9cd9995c8819985a5b1959608a1b60448201526064016100a0565b6001016100ad565b50505050505050565b8360005b838110156102ce57816001600160a01b03166323b872dd338787858181106101fb576101fb61041e565b90506020020160208101906102109190610434565b6040516001600160e01b031960e085901b1681526001600160a01b03928316600482015291166024820152604481018690526064016020604051808303816000875af1158015610264573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102889190610456565b6102c65760405162461bcd60e51b815260206004820152600f60248201526e1d1c985b9cd9995c8819985a5b1959608a1b60448201526064016100a0565b6001016101d1565b505050505050565b80356001600160a01b03811681146102ed57600080fd5b919050565b60008083601f84011261030457600080fd5b50813567ffffffffffffffff81111561031c57600080fd5b6020830191508360208260051b850101111561033757600080fd5b9250929050565b60008060008060006060868803121561035657600080fd5b61035f866102d6565b9450602086013567ffffffffffffffff81111561037b57600080fd5b610387888289016102f2565b909550935050604086013567ffffffffffffffff8111156103a757600080fd5b6103b3888289016102f2565b969995985093965092949392505050565b600080600080606085870312156103da57600080fd5b6103e3856102d6565b9350602085013567ffffffffffffffff8111156103ff57600080fd5b61040b878288016102f2565b9598909750949560400135949350505050565b634e487b7160e01b600052603260045260246000fd5b60006020828403121561044657600080fd5b61044f826102d6565b9392505050565b60006020828403121561046857600080fd5b8151801515811461044f57600080fdfea26469706673582212203eb0a41af2cb5dfbd501567cc78dee6e5025d68b30071e396c8946dfa9e6937464736f6c63430008220033';
+
+const AIRDROP_ABI = [
+  'function airdrop(address token, address[] recipients, uint256[] amounts)',
+  'function airdropFixed(address token, address[] recipients, uint256 amount)',
+];
+
+/**
+ * Solidity source code for the Airdrop contract.
+ */
+export const AIRDROP_SOURCE_CODE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IERC20 {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+}
+
+contract Airdrop {
+    function airdrop(
+        address token,
+        address[] calldata recipients,
+        uint256[] calldata amounts
+    ) external {
+        require(recipients.length == amounts.length, "length mismatch");
+        IERC20 t = IERC20(token);
+        for (uint256 i = 0; i < recipients.length; i++) {
+            require(t.transferFrom(msg.sender, recipients[i], amounts[i]), "transfer failed");
+        }
+    }
+
+    function airdropFixed(
+        address token,
+        address[] calldata recipients,
+        uint256 amount
+    ) external {
+        IERC20 t = IERC20(token);
+        for (uint256 i = 0; i < recipients.length; i++) {
+            require(t.transferFrom(msg.sender, recipients[i], amount), "transfer failed");
+        }
+    }
+}
+`;
+
+/**
  * Solidity source code for the pre-compiled standard ERC-20 token.
  */
 export const ERC20_SOURCE_CODE = `// SPDX-License-Identifier: MIT
@@ -243,6 +290,20 @@ export interface BatchTransferItem {
 export interface BatchTransferResult {
   successful: {to: string; amount: string; txHash: string}[];
   failed: {to: string; amount: string; error: string}[];
+}
+
+export interface AirdropDeployResult {
+  contractAddress: string;
+  txHash: string;
+  explorerUrl: string;
+}
+
+export interface AirdropResult {
+  airdropContract: string;
+  tokenAddress: string;
+  recipientCount: number;
+  txHash: string;
+  explorerUrl: string;
 }
 
 export interface DeployTokenResult {
@@ -667,6 +728,119 @@ export class QFCToken {
       transfers,
       page,
       limit,
+    };
+  }
+
+  /**
+   * Deploy the Airdrop contract (one-time). Once deployed, use `airdrop()` to batch-transfer
+   * any ERC-20 token in a single transaction.
+   * @param signer - wallet to deploy from (pays gas)
+   */
+  async deployAirdrop(signer: ethers.Wallet): Promise<AirdropDeployResult> {
+    const connected = signer.connect(this.provider);
+    const factory = new ethers.ContractFactory(AIRDROP_ABI, AIRDROP_DEPLOY_BYTECODE, connected);
+    const deployTx = await factory.getDeployTransaction();
+    deployTx.gasLimit = 800_000n;
+
+    const tx = await connected.sendTransaction(deployTx);
+    const receipt = await this.waitForReceipt(tx.hash);
+
+    if (receipt.status !== '0x1') {
+      throw new Error(`Airdrop contract deployment reverted (tx: ${tx.hash})`);
+    }
+
+    const explorerUrl = `${this.networkConfig.explorerUrl}/contract/${receipt.contractAddress}`;
+
+    // Best-effort source verification
+    try {
+      const verifyUrl = `${this.networkConfig.explorerUrl}/api/contracts/verify`;
+      await fetch(verifyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: receipt.contractAddress,
+          sourceCode: AIRDROP_SOURCE_CODE,
+          compilerVersion: 'v0.8.34+commit.1c8745a5',
+          evmVersion: 'paris',
+          optimizationRuns: 200,
+        }),
+      });
+    } catch {
+      // Explorer unavailable
+    }
+
+    return {
+      contractAddress: receipt.contractAddress,
+      txHash: tx.hash,
+      explorerUrl,
+    };
+  }
+
+  /**
+   * Airdrop ERC-20 tokens to multiple recipients in a single transaction.
+   * Requires: (1) a deployed Airdrop contract, (2) token approval for the airdrop contract.
+   *
+   * Steps handled automatically:
+   * 1. Check allowance, approve airdrop contract if needed
+   * 2. Call airdrop() or airdropFixed() on the contract
+   *
+   * @param airdropContract - deployed Airdrop contract address
+   * @param tokenAddress - ERC-20 token to distribute
+   * @param recipients - array of {to, amount} objects
+   * @param signer - wallet holding the tokens
+   */
+  async airdrop(
+    airdropContract: string,
+    tokenAddress: string,
+    recipients: BatchTransferItem[],
+    signer: ethers.Wallet,
+  ): Promise<AirdropResult> {
+    const connected = signer.connect(this.provider);
+    const token = new ethers.Contract(tokenAddress, ERC20_ABI, connected);
+    const decimals = await token.decimals();
+
+    // Parse amounts
+    const addresses = recipients.map((r) => r.to);
+    const amounts = recipients.map((r) => ethers.parseUnits(r.amount, decimals));
+    const totalNeeded = amounts.reduce((sum, a) => sum + a, 0n);
+
+    // Check and set allowance
+    const currentAllowance = await token.allowance(connected.address, airdropContract);
+    if (currentAllowance < totalNeeded) {
+      const approveTx = await token.approve(airdropContract, ethers.MaxUint256);
+      const approveReceipt = await this.waitForReceipt(approveTx.hash);
+      if (approveReceipt.status !== '0x1') {
+        throw new Error(`Approval transaction reverted (tx: ${approveTx.hash})`);
+      }
+    }
+
+    // Check if all amounts are the same (use airdropFixed for gas savings)
+    const allSame = amounts.every((a) => a === amounts[0]);
+
+    const airdropCtx = new ethers.Contract(airdropContract, AIRDROP_ABI, connected);
+    let tx: ethers.TransactionResponse;
+
+    if (allSame && amounts.length > 0) {
+      const txData = await airdropCtx.airdropFixed.populateTransaction(tokenAddress, addresses, amounts[0]);
+      txData.gasLimit = BigInt(100_000 + recipients.length * 80_000);
+      tx = await connected.sendTransaction(txData);
+    } else {
+      const txData = await airdropCtx.airdrop.populateTransaction(tokenAddress, addresses, amounts);
+      txData.gasLimit = BigInt(100_000 + recipients.length * 80_000);
+      tx = await connected.sendTransaction(txData);
+    }
+
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') {
+      throw new Error(`Airdrop transaction reverted (tx: ${tx.hash})`);
+    }
+
+    return {
+      airdropContract,
+      tokenAddress,
+      recipientCount: recipients.length,
+      txHash: tx.hash,
+      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${tx.hash}`,
     };
   }
 

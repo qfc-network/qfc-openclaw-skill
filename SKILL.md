@@ -68,8 +68,10 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Check Allowance**: Query how much a spender is approved to use
 - **Token Portfolio** (v2.3): View all token holdings for a wallet — native QFC balance plus every ERC-20 token with non-zero balance
 - **Transfer History** (v2.3): View token transfer history from the explorer — filter by token and/or address
-- **Batch Transfer Tokens** (v2.4): Send tokens to multiple addresses in one operation (airdrop)
+- **Batch Transfer Tokens** (v2.4): Send tokens to multiple addresses in one operation (sequential transfers)
 - **Batch Send QFC** (v2.4): Send native QFC to multiple addresses
+- **Deploy Airdrop Contract** (v2.5): Deploy a reusable Airdrop contract — batch transfer any ERC-20 in a single transaction (saves gas vs sequential). Auto-verifies source on explorer.
+- **Smart Airdrop** (v2.5): Airdrop tokens via the Airdrop contract — auto-approves, supports variable or fixed amounts per recipient
 
 ### NFT / ERC-721 (v2.4)
 - **Deploy NFT Collection**: Create a new ERC-721 NFT contract with name and symbol
@@ -122,7 +124,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | Module | Class | Description |
 |--------|-------|-------------|
 | `contract` | `QFCContract` | Read/write/deploy smart contracts |
-| `token` | `QFCToken` | ERC-20 token operations |
+| `token` | `QFCToken` | ERC-20 token operations + airdrop contract |
 | `nft` | `QFCNFT` | ERC-721 NFT operations |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
@@ -222,6 +224,19 @@ Airdrop 100 XHT tokens to these addresses: 0x1111..., 0x2222..., 0x3333...
 
 ```
 Send 10 QFC to each of these addresses: 0xaaaa..., 0xbbbb...
+```
+
+### Smart Airdrop (single-tx)
+```
+Deploy an airdrop contract on QFC testnet
+```
+
+```
+Airdrop 100 XHT to 0x1111..., 200 XHT to 0x2222..., and 50 XHT to 0x3333... using airdrop contract 0xabcd...
+```
+
+```
+Airdrop 500 GOLD tokens equally to these 10 addresses using the airdrop contract
 ```
 
 ### NFTs
