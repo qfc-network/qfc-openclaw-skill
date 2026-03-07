@@ -47,6 +47,10 @@ npm install && npm run build
 ### Epoch & Finality
 - Current epoch info, finalized block height
 
+### Smart Contracts
+- Read contract state (call), write transactions (send), deploy contracts
+- Check if an address is a contract, retrieve bytecode
+
 ### AI Inference
 - Submit public inference tasks to QFC's decentralized GPU network
 - Query approved models, estimate fees, wait for results
@@ -73,6 +77,7 @@ npm install && npm run build
 | `staking` | `QFCStaking` | Validator & staking info |
 | `epoch` | `QFCEpoch` | Epoch & finality info |
 | `inference` | `QFCInference` | AI inference task submission & results |
+| `contract` | `QFCContract` | Read/write/deploy smart contracts |
 | `provider` | — | Shared provider creation & RPC helper |
 
 ## Network Configuration
@@ -146,6 +151,16 @@ List all validators and their contribution scores
 
 ```
 What's the score breakdown for validator 0x8d1d...?
+```
+
+### Smart Contracts
+
+```
+Read the name() of ERC-20 contract 0xabcd...
+```
+
+```
+Is 0x1234...abcd a contract?
 ```
 
 ### AI Inference

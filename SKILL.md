@@ -49,6 +49,13 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Current Epoch**: Epoch number, start time, duration
 - **Finalized Block**: Latest finalized block number
 
+### Smart Contracts (v2.1)
+- **Call Contract**: Read contract state (no gas needed) — pass address, ABI, method, and args
+- **Send Transaction**: Write to a contract (requires wallet signer, costs gas)
+- **Deploy Contract**: Deploy a new contract from ABI + bytecode
+- **Check Contract**: Verify if an address has contract code deployed
+- **Get Code**: Retrieve raw bytecode at an address
+
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
 - **Inference Stats**: Network-wide statistics (tasks completed, active miners, avg time, FLOPS, pass rate)
@@ -86,6 +93,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 
 | Module | Class | Description |
 |--------|-------|-------------|
+| `contract` | `QFCContract` | Read/write/deploy smart contracts |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -126,6 +134,19 @@ List all QFC validators and their contribution scores
 Look up transaction 0xabc... on QFC testnet — show me the receipt
 ```
 
+### Smart Contracts
+```
+Is 0x1234...abcd a contract address on QFC testnet?
+```
+
+```
+Read the name() and symbol() of ERC-20 contract 0xabcd...
+```
+
+```
+Call the balanceOf method on contract 0xabcd... for address 0x1234...
+```
+
 ### AI Inference
 ```
 What AI models are available on QFC?
@@ -156,6 +177,8 @@ Show me QFC inference network statistics
 | NETWORK_ERROR | RPC connection failed | Check RPC URL, retry |
 | NONCE_TOO_LOW | Transaction already sent | Wait for confirmation, retry |
 | FAUCET_TESTNET_ONLY | Faucet used on mainnet | Switch to testnet |
+| CALL_EXCEPTION | Contract call reverted | Check method name, args, and ABI |
+| UNPREDICTABLE_GAS | Gas estimation failed | Contract may revert, check args |
 | MODEL_NOT_FOUND | Unknown model ID | List models with getModels() |
 | TASK_EXPIRED | Inference task timed out | Resubmit with higher fee |
 | FEE_TOO_LOW | Max fee below minimum | Use estimateFee() to get base price |

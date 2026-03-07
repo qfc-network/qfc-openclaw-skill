@@ -33,15 +33,16 @@ v2.1 focuses on AI inference integration (QFC's key differentiator), contract in
   - Fee estimation, result format
   - Usage examples
 
-## Phase 3: Contract Interaction (Medium Priority)
+## Phase 3: Contract Interaction (Medium Priority) -- DONE
 
-- [ ] `QFCContract` class (`src/contract.ts`)
-  - [ ] `call(address, abi, method, args)` — read contract state
-  - [ ] `send(address, abi, method, args, value?)` — write transaction
-  - [ ] `deploy(abi, bytecode, args)` — deploy contract
-  - [ ] `getCode(address)` — check if address is a contract
-- [ ] Add contract section to SKILL.md capabilities
-- [ ] SecurityPolicy: add contract interaction checks
+- [x] `QFCContract` class (`src/contract.ts`)
+  - [x] `call(address, abi, method, args)` — read contract state
+  - [x] `send(address, abi, method, args, value?)` — write transaction
+  - [x] `deploy(abi, bytecode, args)` — deploy contract
+  - [x] `isContract(address)` — check if address has contract code
+  - [x] `getCode(address)` — retrieve raw bytecode
+- [x] Add contract section to SKILL.md capabilities
+- [x] SecurityPolicy: contract calls already trigger confirmation (existing `isContractCall` flag)
 
 ## Phase 4: Reference Docs (Low Priority)
 
