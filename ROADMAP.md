@@ -198,15 +198,86 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 
 ---
 
-## Release Criteria (v2.4)
+## v3.0 (Planned)
 
-- Batch transfer, NFT class, and Discord bot build passes
+> DeFi infrastructure — wrapped QFC, token launchpad, NFT marketplace, and multi-call.
+
+### Phase 17: Wrapped QFC (WQFC) (High Priority)
+
+> Required for native QFC to work with the DEX and DeFi contracts.
+
+- [ ] WQFC contract (ERC-20 wrapper for native QFC)
+  - `deposit()` payable — wrap QFC → WQFC
+  - `withdraw(amount)` — unwrap WQFC → QFC
+  - Standard ERC-20 interface (transfer, approve, etc.)
+- [ ] `QFCSwap.wrapQFC(amount, signer)` — wrap native QFC into WQFC
+- [ ] `QFCSwap.unwrapQFC(amount, signer)` — unwrap WQFC back to native QFC
+- [ ] `QFCSwap.swapQFCForToken(poolAddress, amountIn, signer)` — auto-wrap + swap in one call
+- [ ] Deploy canonical WQFC contract on testnet, hardcode address in config
+
+### Phase 18: Token Launchpad (High Priority)
+
+> One-command token launch: deploy token + create pool + add initial liquidity.
+
+- [ ] `QFCToken.launch(name, symbol, supply, initialLiquidityQFC, signer)`
+  - Deploy mintable ERC-20
+  - Deploy WQFC pool (or use existing canonical WQFC)
+  - Approve + add initial liquidity (token + WQFC)
+  - Return token address, pool address, explorer URLs
+- [ ] `references/token-launchpad.md` — step-by-step guide
+
+### Phase 19: NFT Marketplace (Medium Priority)
+
+> List, buy, and sell NFTs with a simple on-chain marketplace contract.
+
+- [ ] Marketplace contract
+  - `list(nftContract, tokenId, price)` — list NFT for sale (native QFC)
+  - `buy(listingId)` payable — purchase listed NFT
+  - `cancel(listingId)` — cancel listing (seller only)
+  - `getListings()` — view active listings
+  - `getListingsByCollection(nftContract)` — filter by collection
+- [ ] `QFCMarketplace` class (`src/marketplace.ts`)
+  - `deploy(signer)` — deploy marketplace contract
+  - `listNFT(marketplace, nftContract, tokenId, priceQFC, signer)`
+  - `buyNFT(marketplace, listingId, signer)`
+  - `cancelListing(marketplace, listingId, signer)`
+  - `getListings(marketplace)` / `getListingsByCollection(marketplace, nftContract)`
+- [ ] Auto-approve NFT transfer to marketplace on listing
+
+### Phase 20: Multi-Call (Low Priority)
+
+> Batch multiple read calls into a single RPC request for performance.
+
+- [ ] Multicall3 contract (pre-compiled)
+  - `aggregate3(calls[])` — batch view calls, return results
+- [ ] `QFCMulticall` class (`src/multicall.ts`)
+  - `call(calls[])` — batch multiple contract reads in one RPC
+  - `getTokenBalances(tokens[], owner)` — batch balanceOf for many tokens
+  - `getPoolReserves(pools[])` — batch reserve queries for multiple pools
+- [ ] Use multicall internally in `getPortfolio()` for better performance
+
+### Phase 21: Event Subscriptions (Low Priority)
+
+> Watch for on-chain events in real-time (new transfers, swaps, listings).
+
+- [ ] `QFCEvents` class (`src/events.ts`)
+  - `watchTransfers(tokenAddress, callback)` — ERC-20 Transfer events
+  - `watchSwaps(poolAddress, callback)` — Swap events on AMM pool
+  - `watchNFTSales(marketplace, callback)` — NFT sale events
+  - `watchBlocks(callback)` — new block notifications
+- [ ] Uses polling (QFC doesn't support WebSocket subscriptions yet)
+
+---
+
+## Release Criteria
+
 - `npm run build` passes with no errors
 - SKILL.md updated with all new capabilities
+- All pre-compiled bytecodes use solc 0.8.34, evmVersion: paris, optimizer 200 runs
 
 ## Dependencies
 
 - QFC testnet RPC operational (eth_call must support storage reads)
 - QFC explorer API `/api/tokens` endpoint operational
-- Pre-compiled ERC-20 bytecode (Solidity 0.8.x, evmVersion: paris)
-- Explorer contract verification API (for Phase 8)
+- Pre-compiled bytecodes (Solidity 0.8.x, evmVersion: paris)
+- Explorer contract verification API
