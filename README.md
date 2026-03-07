@@ -73,6 +73,80 @@ Edit `config/qfc-networks.json` to customize RPC endpoints.
 | Testnet | 9000 | https://rpc.testnet.qfc.network |
 | Mainnet | 9001 | https://rpc.qfc.network |
 
-## Usage
+## Usage Examples
+
+Once installed, just tell your AI agent what you want in natural language:
+
+### Wallet
+
+```
+Create a new QFC wallet on testnet
+```
+
+```
+Show my wallet balance
+```
+
+```
+Save my wallet with password "s3cret"
+```
+
+```
+List my saved wallets
+```
+
+```
+Load wallet 0x1234...abcd with password "s3cret"
+```
+
+### Faucet & Transfers
+
+```
+Request test QFC from the faucet
+```
+
+```
+Send 5 QFC to 0xabcd...1234
+```
+
+### Chain Queries
+
+```
+What's the latest block number?
+```
+
+```
+Look up transaction 0xabc123...
+```
+
+```
+Show me block 1500 details
+```
+
+### Network & Validators
+
+```
+Show QFC testnet status
+```
+
+```
+List all validators and their contribution scores
+```
+
+```
+What's the score breakdown for validator 0x8d1d...?
+```
+
+### Epoch & Finality
+
+```
+What epoch are we in?
+```
+
+```
+What's the latest finalized block?
+```
+
+## Reference
 
 See [SKILL.md](./SKILL.md) for the full agent capability description and [references/](./references/) for detailed operation guides.
