@@ -179,10 +179,22 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
   - Auto-approves airdrop contract if needed
   - Auto-selects `airdropFixed` when all amounts are equal
 
-### Phase 16: Token Swap / DEX
+### Phase 16: Token Swap / DEX -- DONE
 
-- [ ] Simple AMM contract deployment
-- [ ] `QFCSwap` class — create pool, add liquidity, swap tokens
+- [x] SimpleSwap AMM contract (Solidity 0.8.34, paris, optimizer 200)
+  - Constant-product x*y=k with 0.3% swap fee
+  - LP tokens (sqrt-based minting, proportional redemption)
+  - Slippage protection (minOut parameter)
+- [x] `QFCSwap` class (`src/swap.ts`)
+  - [x] `deployPool(tokenA, tokenB, signer)` — deploy pair pool
+  - [x] `getPoolInfo(poolAddress)` — reserves, prices, LP supply
+  - [x] `addLiquidity(poolAddress, amountA, amountB, signer)` — deposit + auto-approve
+  - [x] `removeLiquidity(poolAddress, lpAmount, signer)` — burn LP, withdraw tokens
+  - [x] `swap(poolAddress, tokenIn, amountIn, signer, slippagePct?)` — execute swap
+  - [x] `getQuote(poolAddress, tokenIn, amountIn)` — preview output + price impact
+  - [x] `getLPBalance(poolAddress, owner)` — check LP balance
+- [x] Auto-verify source code on explorer after deployment
+- [x] Exported `SWAP_SOURCE_CODE` for manual verification
 
 ---
 

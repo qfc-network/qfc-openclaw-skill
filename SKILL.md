@@ -79,6 +79,15 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **View NFT**: Query token URI, owner, and balance for any NFT
 - **Transfer NFT**: Transfer an NFT to another address
 
+### Token Swap / DEX (v2.5)
+- **Deploy Pool**: Create a constant-product AMM pool (x*y=k) for any ERC-20 token pair. 0.3% swap fee. LP tokens track liquidity shares. Auto-verifies source on explorer.
+- **Pool Info**: View pool reserves, token details, current price, and total LP supply
+- **Add Liquidity**: Deposit both tokens into a pool to earn LP tokens (auto-approves)
+- **Remove Liquidity**: Burn LP tokens to withdraw proportional share of both tokens
+- **Swap Tokens**: Swap one token for another with slippage protection (default 1%)
+- **Get Quote**: Preview expected output amount, price impact, and fee before swapping
+- **LP Balance**: Check LP token balance for any address
+
 ### Discord Bot Integration (v2.5)
 - **Command Processor**: Framework-agnostic Discord bot command handler — no discord.js dependency
 - **Supported Commands**: `!help`, `!faucet`, `!balance`, `!portfolio`, `!tx`, `!block`, `!price`, `!info`
@@ -126,6 +135,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | `contract` | `QFCContract` | Read/write/deploy smart contracts |
 | `token` | `QFCToken` | ERC-20 token operations + airdrop contract |
 | `nft` | `QFCNFT` | ERC-721 NFT operations |
+| `swap` | `QFCSwap` | AMM token swap / DEX (constant-product pools) |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -258,6 +268,31 @@ Get the metadata URI for token #3 in the NFT collection at 0xabcd...
 
 ```
 Transfer NFT #2 from my wallet to 0x5678... on contract 0xabcd...
+```
+
+### Token Swap / DEX
+```
+Create a swap pool for tokens 0xAAA... and 0xBBB... on QFC testnet
+```
+
+```
+Add liquidity: 1000 of token A and 500 of token B to pool 0xPOOL...
+```
+
+```
+Swap 100 of token 0xAAA... for token B on pool 0xPOOL...
+```
+
+```
+Get a quote: how much token B would I get for 50 of token A on pool 0xPOOL...?
+```
+
+```
+Show pool info for 0xPOOL... — reserves, price, and LP supply
+```
+
+```
+Remove all my liquidity from pool 0xPOOL...
 ```
 
 ### Smart Contracts

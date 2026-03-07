@@ -26,7 +26,8 @@ src/
   epoch.ts          — QFCEpoch: epoch & finality
   inference.ts      — QFCInference: AI inference tasks
   contract.ts       — QFCContract: read/write/deploy/verify contracts
-  token.ts          — QFCToken: ERC-20 deploy/transfer/mint/burn
+  token.ts          — QFCToken: ERC-20 deploy/transfer/mint/burn/airdrop
+  swap.ts           — QFCSwap: AMM token swap (constant-product pools)
 config/
   qfc-networks.json — RPC endpoints, chain IDs, explorer URLs
 references/         — markdown guides for agents (wallet ops, token deployment, etc.)

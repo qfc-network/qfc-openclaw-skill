@@ -13,6 +13,8 @@ export { QFCToken, ERC20_SOURCE_CODE, MINTABLE_SOURCE_CODE, AIRDROP_SOURCE_CODE 
 export type { DeployTokenResult, PortfolioResult, PortfolioItem, TransferHistoryResult, TokenTransfer, BatchTransferItem, BatchTransferResult, AirdropDeployResult, AirdropResult } from './token.js';
 export { QFCNFT, ERC721_SOURCE_CODE } from './nft.js';
 export type { NFTDeployResult, NFTMintResult, NFTInfo } from './nft.js';
+export { QFCSwap, SWAP_SOURCE_CODE } from './swap.js';
+export type { PoolDeployResult, PoolInfo, AddLiquidityResult, RemoveLiquidityResult, SwapResult, SwapQuote } from './swap.js';
 export { QFCDiscordBot } from './discord.js';
 export type { BotCommand, BotResponse } from './discord.js';
 export { createProvider, getNetworkConfig, rpcCall } from './provider.js';
