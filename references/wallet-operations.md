@@ -59,6 +59,53 @@ const signature = await wallet.signMessage('Hello QFC');
 
 **Returns:** `string` — The 0x-prefixed signature (65 bytes)
 
+## Wallet Persistence
+
+Wallets are encrypted with scrypt KDF and stored in `~/.openclaw/qfc-wallets/`. The keystore format is compatible with MetaMask and Geth.
+
+### Save Wallet to Disk
+
+```typescript
+await wallet.save('mypassword', 'my-wallet');
+```
+
+Encrypts the current wallet and writes it to `~/.openclaw/qfc-wallets/keystore/<address>.json` with 0600 permissions.
+
+### Load a Saved Wallet
+
+```typescript
+const wallet = await QFCWallet.load('0xAddress', 'mypassword', 'testnet');
+```
+
+Decrypts the keystore file and returns a ready-to-use `QFCWallet` instance.
+
+### List Saved Wallets
+
+```typescript
+const wallets = QFCWallet.listSaved();
+// [{ address, name, network, createdAt }]
+```
+
+No password needed — returns metadata only.
+
+### Remove a Saved Wallet
+
+```typescript
+const keystore = new QFCKeystore();
+keystore.removeWallet('0xAddress');
+```
+
+Deletes the keystore file and metadata entry.
+
+### Export Keystore JSON
+
+```typescript
+const keystore = new QFCKeystore();
+const json = keystore.getKeystoreJson('0xAddress');
+```
+
+Returns the encrypted JSON string for import into MetaMask or other tools.
+
 ## Security Policy
 
 Before any transaction, run the security check:
