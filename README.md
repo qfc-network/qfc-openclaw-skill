@@ -7,6 +7,10 @@ AI agent skill for interacting with the QFC blockchain. Provides wallet manageme
 ## Install
 
 ```bash
+# OpenClaw native
+openclaw skills add https://github.com/qfc-network/qfc-openclaw-skill
+
+# or via ClawHub
 clawhub install qfc
 
 # or without installing clawhub globally:
@@ -43,6 +47,12 @@ npm install && npm run build
 ### Epoch & Finality
 - Current epoch info, finalized block height
 
+### AI Inference
+- Submit public inference tasks to QFC's decentralized GPU network
+- Query approved models, estimate fees, wait for results
+- Decode base64 result payloads from completed tasks
+- Network-wide inference statistics (tasks, miners, FLOPS, pass rate)
+
 ### Faucet
 - Request test QFC on testnet (chain_id=9000)
 
@@ -62,6 +72,7 @@ npm install && npm run build
 | `network` | `QFCNetwork` | Node info & network status |
 | `staking` | `QFCStaking` | Validator & staking info |
 | `epoch` | `QFCEpoch` | Epoch & finality info |
+| `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
 ## Network Configuration
@@ -135,6 +146,20 @@ List all validators and their contribution scores
 
 ```
 What's the score breakdown for validator 0x8d1d...?
+```
+
+### AI Inference
+
+```
+What AI models are available on QFC?
+```
+
+```
+How much does it cost to run a text embedding on QFC?
+```
+
+```
+Submit an inference task using qfc-embed-small with input "Hello world" and max fee 0.1 QFC
 ```
 
 ### Epoch & Finality

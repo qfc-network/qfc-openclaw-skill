@@ -1,6 +1,6 @@
 ---
 name: qfc-openclaw-skill
-description: QFC blockchain interaction — wallet, faucet, chain queries, staking, epoch & finality
+description: QFC blockchain interaction — wallet, faucet, chain queries, staking, epoch & finality, AI inference
 homepage: https://github.com/qfc-network/qfc-openclaw-skill
 metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 ---
@@ -49,6 +49,15 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Current Epoch**: Epoch number, start time, duration
 - **Finalized Block**: Latest finalized block number
 
+### AI Inference (v2.1)
+- **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
+- **Inference Stats**: Network-wide statistics (tasks completed, active miners, avg time, FLOPS, pass rate)
+- **Submit Task**: Submit a public inference task with model ID, input data, and max fee (requires wallet signature)
+- **Estimate Fee**: Get estimated cost for an inference task based on model and input size
+- **Query Task Status**: Check if a task is pending, assigned, completed, failed, or expired
+- **Wait for Result**: Poll until task reaches a terminal state (configurable timeout)
+- **Decode Result**: Parse the JSON envelope + base64 result payload from completed tasks
+
 ## Security Rules
 
 1. **Never expose private keys or mnemonics** in conversation output. Store them securely and reference by wallet address only.
@@ -56,6 +65,10 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 3. **Verify recipient addresses** — Validate address format (0x + 40 hex chars) before sending.
 4. **Default to testnet** — Unless the user explicitly requests mainnet, all operations use testnet.
 5. **Rate limit transactions** — Maximum 1000 QFC per day by default (configurable).
+
+## Setup
+
+Run `{baseDir}/scripts/setup.sh` before first use. This installs dependencies and compiles TypeScript modules to `{baseDir}/dist/`.
 
 ## Configuration
 
@@ -73,7 +86,10 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 
 | Module | Class | Description |
 |--------|-------|-------------|
+| `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
+
+All modules are compiled to `{baseDir}/dist/`.
 | `wallet` | `QFCWallet` | Wallet create/import/balance/send/sign/save/load |
 | `keystore` | `QFCKeystore` | Encrypted wallet persistence (scrypt keystore) |
 | `security` | `SecurityPolicy` | Pre-transaction safety checks |
@@ -110,6 +126,27 @@ List all QFC validators and their contribution scores
 Look up transaction 0xabc... on QFC testnet — show me the receipt
 ```
 
+### AI Inference
+```
+What AI models are available on QFC?
+```
+
+```
+How much does it cost to run a text embedding on QFC?
+```
+
+```
+Submit an inference task using qfc-embed-small with input "Hello world" and max fee 0.1 QFC
+```
+
+```
+Check the status of inference task 0xdef456...
+```
+
+```
+Show me QFC inference network statistics
+```
+
 ## Error Handling
 
 | Error | Meaning | Action |
@@ -119,3 +156,6 @@ Look up transaction 0xabc... on QFC testnet — show me the receipt
 | NETWORK_ERROR | RPC connection failed | Check RPC URL, retry |
 | NONCE_TOO_LOW | Transaction already sent | Wait for confirmation, retry |
 | FAUCET_TESTNET_ONLY | Faucet used on mainnet | Switch to testnet |
+| MODEL_NOT_FOUND | Unknown model ID | List models with getModels() |
+| TASK_EXPIRED | Inference task timed out | Resubmit with higher fee |
+| FEE_TOO_LOW | Max fee below minimum | Use estimateFee() to get base price |
