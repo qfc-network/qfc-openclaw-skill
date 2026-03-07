@@ -56,6 +56,13 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Check Contract**: Verify if an address has contract code deployed
 - **Get Code**: Retrieve raw bytecode at an address
 
+### ERC-20 Tokens (v2.1)
+- **Token Info**: Get name, symbol, decimals, and total supply of any ERC-20 token
+- **Token Balance**: Check token balance for any address
+- **Transfer Tokens**: Send ERC-20 tokens to another address (auto-handles decimals)
+- **Approve Spender**: Approve a contract/address to spend tokens (supports "max" for unlimited)
+- **Check Allowance**: Query how much a spender is approved to use
+
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
 - **Inference Stats**: Network-wide statistics (tasks completed, active miners, avg time, FLOPS, pass rate)
@@ -94,6 +101,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | Module | Class | Description |
 |--------|-------|-------------|
 | `contract` | `QFCContract` | Read/write/deploy smart contracts |
+| `token` | `QFCToken` | ERC-20 token operations |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -132,6 +140,19 @@ List all QFC validators and their contribution scores
 ### Check transaction
 ```
 Look up transaction 0xabc... on QFC testnet — show me the receipt
+```
+
+### ERC-20 Tokens
+```
+What is the token at 0xabcd...? Show me name, symbol, and total supply.
+```
+
+```
+Check my token balance for 0xabcd... token
+```
+
+```
+Transfer 50 tokens (0xabcd...) to 0x5678...
 ```
 
 ### Smart Contracts

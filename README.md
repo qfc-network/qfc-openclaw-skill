@@ -47,6 +47,11 @@ npm install && npm run build
 ### Epoch & Finality
 - Current epoch info, finalized block height
 
+### ERC-20 Tokens
+- Get token info (name, symbol, decimals, totalSupply)
+- Check token balances, transfer tokens, approve spenders
+- Auto-handles decimal conversion
+
 ### Smart Contracts
 - Read contract state (call), write transactions (send), deploy contracts
 - Check if an address is a contract, retrieve bytecode
@@ -78,6 +83,7 @@ npm install && npm run build
 | `epoch` | `QFCEpoch` | Epoch & finality info |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `contract` | `QFCContract` | Read/write/deploy smart contracts |
+| `token` | `QFCToken` | ERC-20 token operations |
 | `provider` | — | Shared provider creation & RPC helper |
 
 ## Network Configuration
@@ -151,6 +157,16 @@ List all validators and their contribution scores
 
 ```
 What's the score breakdown for validator 0x8d1d...?
+```
+
+### ERC-20 Tokens
+
+```
+What is the token at 0xabcd...?
+```
+
+```
+Check my balance for token 0xabcd...
 ```
 
 ### Smart Contracts

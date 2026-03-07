@@ -44,22 +44,21 @@ v2.1 focuses on AI inference integration (QFC's key differentiator), contract in
 - [x] Add contract section to SKILL.md capabilities
 - [x] SecurityPolicy: contract calls already trigger confirmation (existing `isContractCall` flag)
 
-## Phase 4: Reference Docs (Low Priority)
+## Phase 4: Reference Docs (Low Priority) -- DONE
 
-- [ ] `references/defi-operations.md` — swap, liquidity, staking guide
-- [ ] `references/governance.md` — model governance, proposals, voting
-- [ ] `references/error-handling.md` — comprehensive error catalog
+- [x] `references/defi-operations.md` — swap, liquidity, staking guide
+- [x] `references/governance.md` — model governance, proposals, voting
+- [x] `references/error-handling.md` — comprehensive error catalog
 
-## Phase 5: ERC-20 Token Support (Low Priority)
+## Phase 5: ERC-20 Token Support (Low Priority) -- DONE
 
-> Defer until QFC token ecosystem develops
-
-- [ ] `QFCToken` class (`src/token.ts`)
-  - [ ] `getTokenBalance(tokenAddress, owner)`
-  - [ ] `transferToken(tokenAddress, to, amount)`
-  - [ ] `approveToken(tokenAddress, spender, amount)`
-  - [ ] `getTokenInfo(tokenAddress)` — name, symbol, decimals, totalSupply
-- [ ] Add token section to SKILL.md
+- [x] `QFCToken` class (`src/token.ts`)
+  - [x] `getTokenInfo(tokenAddress)` — name, symbol, decimals, totalSupply
+  - [x] `getBalance(tokenAddress, owner)` — token balance with decimal formatting
+  - [x] `transfer(tokenAddress, to, amount)` — send tokens (auto-handles decimals)
+  - [x] `approve(tokenAddress, spender, amount)` — approve spender (supports "max")
+  - [x] `getAllowance(tokenAddress, owner, spender)` — check allowance
+- [x] Add token section to SKILL.md
 
 ---
 
