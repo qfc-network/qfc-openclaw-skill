@@ -8,6 +8,9 @@ AI agent skill for interacting with the QFC blockchain. Provides wallet manageme
 
 ```bash
 clawhub install qfc
+
+# or without installing clawhub globally:
+npx clawhub@latest install qfc
 ```
 
 Or from source:
