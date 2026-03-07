@@ -65,6 +65,9 @@ export class QFCWallet {
     amount: string,
     opts?: { gasLimit?: number },
   ): Promise<SendResult> {
+    if (!ethers.isAddress(to)) {
+      throw new Error('Invalid address format. Expected 0x + 40 hex characters.');
+    }
     const wallet = this.requireWallet();
     const tx = await wallet.sendTransaction({
       to,

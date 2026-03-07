@@ -67,24 +67,28 @@ export class QFCStaking {
   /** Get detailed score breakdown */
   async getScoreBreakdown(address: string): Promise<ScoreBreakdown> {
     const raw = await rpcCall(this.provider, 'qfc_getValidatorScoreBreakdown', [address]);
+    if (!raw || !raw.address) {
+      throw new Error(`No score breakdown found for ${address}`);
+    }
+    const metrics = raw.metrics ?? {};
     return {
       address: raw.address,
       totalScore: Number(raw.totalScore),
-      stake: ethers.formatEther(BigInt(raw.stake)),
+      stake: ethers.formatEther(BigInt(raw.stake ?? '0x0')),
       dimensions: {
-        stake: Number(raw.dimensions.stake),
-        compute: Number(raw.dimensions.compute),
-        uptime: Number(raw.dimensions.uptime),
-        accuracy: Number(raw.dimensions.accuracy),
-        network: Number(raw.dimensions.network),
-        storage: Number(raw.dimensions.storage),
-        reputation: Number(raw.dimensions.reputation),
+        stake: Number(raw.stakeScore ?? 0),
+        compute: Number(raw.computeScore ?? 0),
+        uptime: Number(raw.uptimeScore ?? 0),
+        accuracy: Number(raw.accuracyScore ?? 0),
+        network: Number(raw.networkScore ?? 0),
+        storage: Number(raw.storageScore ?? 0),
+        reputation: Number(raw.reputationScore ?? 0),
       },
       metrics: {
-        uptimePercent: raw.metrics.uptimePercent,
-        accuracyPercent: raw.metrics.accuracyPercent,
-        blocksProduced: Number(raw.metrics.blocksProduced),
-        providesCompute: Boolean(raw.metrics.providesCompute),
+        uptimePercent: metrics.uptimePercent ?? '0',
+        accuracyPercent: metrics.accuracyPercent ?? '0',
+        blocksProduced: Number(metrics.blocksProduced ?? 0),
+        providesCompute: Boolean(metrics.providesCompute),
       },
     };
   }

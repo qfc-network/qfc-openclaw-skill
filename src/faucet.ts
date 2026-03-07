@@ -29,8 +29,22 @@ export class QFCFaucet {
    * @param amount - amount in QFC (not wei), defaults to "10"
    */
   async requestQFC(address: string, amount: string = '10'): Promise<FaucetResult> {
-    const amountInWei = ethers.parseEther(amount).toString();
-    const result = await rpcCall(this.provider, 'qfc_requestFaucet', [address, amountInWei]);
+    if (!ethers.isAddress(address)) {
+      throw new Error('Invalid address format. Expected 0x + 40 hex characters.');
+    }
+    const parsed = parseFloat(amount);
+    if (isNaN(parsed) || parsed <= 0) {
+      throw new Error('Amount must be a positive number.');
+    }
+
+    let result: any;
+    try {
+      const amountInWei = ethers.parseEther(amount).toString();
+      result = await rpcCall(this.provider, 'qfc_requestFaucet', [address, amountInWei]);
+    } catch (err: any) {
+      throw new Error(`Faucet request failed: ${err.message ?? err}`);
+    }
+
     const txHash = typeof result === 'string' ? result : result.txHash;
     return {
       txHash,
