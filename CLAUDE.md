@@ -72,9 +72,17 @@ npm run build          # tsc → dist/
 npm run dev            # tsc --watch
 ```
 
-Publishing to ClawHub:
+Publishing to ClawHub (must use `npx`, `clawhub` is not installed globally):
 ```bash
+# Login first (opens browser, one-time)
+npx clawhub@latest login
+
+# Publish — version should match package.json
 npx clawhub@latest publish . --slug qfc --version X.Y.Z --changelog "..."
+
+# Users install/update with:
+npx clawhub@latest install qfc
+npx clawhub@latest update qfc
 ```
 
 ## Conventions

@@ -11,9 +11,6 @@ AI agent skill for interacting with the QFC blockchain. Provides wallet manageme
 openclaw skills add https://github.com/qfc-network/qfc-openclaw-skill
 
 # or via ClawHub
-clawhub install qfc
-
-# or without installing clawhub globally:
 npx clawhub@latest install qfc
 ```
 
@@ -21,7 +18,7 @@ npx clawhub@latest install qfc
 
 ```bash
 # via ClawHub
-clawhub update qfc
+npx clawhub@latest update qfc
 
 # or if installed via openclaw skills add
 cd ~/.openclaw/skills/qfc-openclaw-skill
