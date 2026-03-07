@@ -24,6 +24,25 @@ export interface InferenceModel {
   approved: boolean;
 }
 
+export interface DecodedResult {
+  model: string;
+  submitter: string;
+  miner: string;
+  output: any;
+  executionTimeMs: number;
+  timestamps: {
+    submitted: number;
+    completed: number;
+  };
+}
+
+export interface FeeEstimate {
+  baseFee: string;
+  model: string;
+  gpuTier: string;
+  estimatedTimeMs: number;
+}
+
 /**
  * QFCInference — submit and query AI inference tasks on QFC.
  */
@@ -83,11 +102,69 @@ export class QFCInference {
   }
 
   /**
-   * Decode a base64 result payload to a UTF-8 string.
-   * Useful for text-based inference results.
+   * Submit a public inference task.
+   * @param model - model ID from the registry (e.g. "qfc-embed-small")
+   * @param input - input data (text string, base64 image, etc.)
+   * @param maxFee - maximum fee in QFC (e.g. "0.5")
+   * @param signer - wallet to sign and pay for the task
    */
-  decodeResult(base64Result: string): string {
-    return Buffer.from(base64Result, 'base64').toString('utf-8');
+  async submitTask(
+    model: string,
+    input: string,
+    maxFee: string,
+    signer: ethers.Wallet,
+  ): Promise<string> {
+    const payload = {
+      model,
+      input,
+      maxFee: ethers.parseEther(maxFee).toString(),
+      submitter: signer.address,
+    };
+    const message = JSON.stringify(payload);
+    const signature = await signer.signMessage(message);
+    const result = await rpcCall(this.provider, 'qfc_submitPublicTask', [
+      { ...payload, signature },
+    ]);
+    return result.taskId;
+  }
+
+  /** Estimate the fee for an inference task */
+  async estimateFee(model: string, inputSize: number = 0): Promise<FeeEstimate> {
+    const raw = await rpcCall(this.provider, 'qfc_estimateInferenceFee', [
+      { model, inputSize },
+    ]);
+    return {
+      baseFee: ethers.formatEther(raw.baseFee),
+      model: raw.model,
+      gpuTier: raw.gpuTier,
+      estimatedTimeMs: Number(raw.estimatedTimeMs),
+    };
+  }
+
+  /**
+   * Decode a base64 result payload from a completed task.
+   * Result format: JSON envelope with base64-encoded output.
+   */
+  decodeResult(base64Result: string): DecodedResult {
+    const envelope = JSON.parse(base64Result);
+    const outputRaw = Buffer.from(envelope.output_base64, 'base64').toString('utf-8');
+    let output: any;
+    try {
+      output = JSON.parse(outputRaw);
+    } catch {
+      output = outputRaw;
+    }
+    return {
+      model: envelope.model,
+      submitter: envelope.submitter,
+      miner: envelope.miner,
+      output,
+      executionTimeMs: envelope.execution_time_ms,
+      timestamps: {
+        submitted: envelope.submitted_at,
+        completed: envelope.completed_at,
+      },
+    };
   }
 
   /**
