@@ -27,7 +27,10 @@ src/
   inference.ts      — QFCInference: AI inference tasks
   contract.ts       — QFCContract: read/write/deploy/verify contracts
   token.ts          — QFCToken: ERC-20 deploy/transfer/mint/burn/airdrop
-  swap.ts           — QFCSwap: AMM token swap (constant-product pools)
+  swap.ts           — QFCSwap: AMM token swap + WQFC wrapper
+  marketplace.ts    — QFCMarketplace: NFT marketplace (list/buy/sell)
+  multicall.ts      — QFCMulticall: batch contract reads
+  events.ts         — QFCEvents: event subscriptions via polling
 config/
   qfc-networks.json — RPC endpoints, chain IDs, explorer URLs
 references/         — markdown guides for agents (wallet ops, token deployment, etc.)

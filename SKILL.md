@@ -87,6 +87,33 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Swap Tokens**: Swap one token for another with slippage protection (default 1%)
 - **Get Quote**: Preview expected output amount, price impact, and fee before swapping
 - **LP Balance**: Check LP token balance for any address
+- **Deploy WQFC** (v3.0): Deploy the Wrapped QFC (ERC-20 wrapper for native QFC)
+- **Wrap/Unwrap QFC** (v3.0): Convert native QFC ↔ WQFC for use in DEX pools
+- **Swap QFC for Token** (v3.0): Auto-wrap native QFC and swap in one call
+- **Swap Token for QFC** (v3.0): Swap token to WQFC and auto-unwrap to native QFC
+
+### Token Launchpad (v3.0)
+- **Launch Token**: One-command token launch — deploy token + deploy WQFC pool + add initial liquidity. Returns token address, pool address, and LP details.
+
+### NFT Marketplace (v3.0)
+- **Deploy Marketplace**: Deploy an on-chain NFT marketplace contract (payment in native QFC)
+- **List NFT**: List an NFT for sale with a price in QFC (auto-approves marketplace)
+- **Buy NFT**: Purchase a listed NFT by sending QFC (auto-refunds excess)
+- **Cancel Listing**: Cancel an active listing (seller only)
+- **View Listings**: Get all active listings or filter by NFT collection
+- **Get Listing**: View details of a specific listing
+
+### Multi-Call (v3.0)
+- **Deploy Multicall3**: Deploy a batch-call contract for aggregating view calls
+- **Batch Calls**: Execute multiple contract reads in a single RPC request
+- **Batch Token Balances**: Query balanceOf for many tokens at once
+- **Batch Pool Reserves**: Query reserves for multiple AMM pools at once
+
+### Event Subscriptions (v3.0)
+- **Watch Transfers**: Poll for new ERC-20 Transfer events on a token
+- **Watch Swaps**: Poll for new Swap events on an AMM pool
+- **Watch NFT Sales**: Poll for new Sold events on the marketplace
+- **Watch Blocks**: Poll for new blocks with transaction counts
 
 ### Discord Bot Integration (v2.5)
 - **Command Processor**: Framework-agnostic Discord bot command handler — no discord.js dependency
@@ -135,7 +162,10 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | `contract` | `QFCContract` | Read/write/deploy smart contracts |
 | `token` | `QFCToken` | ERC-20 token operations + airdrop contract |
 | `nft` | `QFCNFT` | ERC-721 NFT operations |
-| `swap` | `QFCSwap` | AMM token swap / DEX (constant-product pools) |
+| `swap` | `QFCSwap` | AMM token swap / DEX + WQFC wrapper |
+| `marketplace` | `QFCMarketplace` | NFT marketplace (list/buy/sell) |
+| `multicall` | `QFCMulticall` | Batch contract reads in single RPC |
+| `events` | `QFCEvents` | Event subscriptions via polling |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -293,6 +323,50 @@ Show pool info for 0xPOOL... — reserves, price, and LP supply
 
 ```
 Remove all my liquidity from pool 0xPOOL...
+```
+
+### WQFC (Wrapped QFC)
+```
+Deploy WQFC contract on QFC testnet
+```
+
+```
+Wrap 100 QFC into WQFC using contract 0xWQFC...
+```
+
+```
+Swap 50 native QFC for token 0xAAA... via WQFC pool 0xPOOL...
+```
+
+### Token Launchpad
+```
+Launch a new token called "Moon Coin" (MOON) with 1M supply, add 100k tokens and 500 QFC as initial liquidity
+```
+
+### NFT Marketplace
+```
+Deploy an NFT marketplace on QFC testnet
+```
+
+```
+List NFT #3 from collection 0xNFT... for 10 QFC on marketplace 0xMKT...
+```
+
+```
+Buy listing #0 on marketplace 0xMKT...
+```
+
+```
+Show all active NFT listings on marketplace 0xMKT...
+```
+
+### Multi-Call
+```
+Deploy a Multicall3 contract on QFC testnet
+```
+
+```
+Batch check balances of 5 tokens for my wallet using multicall 0xMC...
 ```
 
 ### Smart Contracts

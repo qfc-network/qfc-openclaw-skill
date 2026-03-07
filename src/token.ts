@@ -269,6 +269,12 @@ export interface TransferHistoryResult {
   limit: number;
 }
 
+export interface LaunchResult {
+  token: DeployTokenResult;
+  pool: { poolAddress: string; txHash: string; explorerUrl: string };
+  liquidity: { lpMinted: string; amountToken: string; amountWQFC: string; txHash: string };
+}
+
 export interface TokenBalance {
   token: string;
   symbol: string;
@@ -502,6 +508,62 @@ export class QFCToken {
       }
     }
     return results;
+  }
+
+  /**
+   * Launch a new token with initial DEX liquidity in one call.
+   * Steps: deploy token → deploy WQFC pool → wrap QFC → add liquidity.
+   *
+   * @param name - token name
+   * @param symbol - token symbol
+   * @param totalSupply - total supply (human-readable, e.g. "1000000")
+   * @param liquidityTokenAmount - amount of tokens to add as liquidity (human-readable)
+   * @param liquidityQFCAmount - amount of native QFC to pair (human-readable)
+   * @param wqfcAddress - deployed WQFC contract address
+   * @param signer - wallet (pays gas, receives remaining tokens)
+   * @param mintable - deploy as mintable token (default false)
+   */
+  async launch(
+    name: string,
+    symbol: string,
+    totalSupply: string,
+    liquidityTokenAmount: string,
+    liquidityQFCAmount: string,
+    wqfcAddress: string,
+    signer: ethers.Wallet,
+    mintable: boolean = false,
+  ): Promise<LaunchResult> {
+    // Dynamic import to avoid circular dependency
+    const { QFCSwap } = await import('./swap.js');
+    const swap = new QFCSwap(this.networkConfig.name === 'QFC Testnet' ? 'testnet' : 'mainnet');
+
+    // Step 1: Deploy token
+    const token = await this.deploy(name, symbol, totalSupply, signer, mintable);
+
+    // Step 2: Wrap QFC → WQFC
+    await swap.wrapQFC(wqfcAddress, liquidityQFCAmount, signer);
+
+    // Step 3: Deploy pool (token ↔ WQFC)
+    const pool = await swap.deployPool(token.contractAddress, wqfcAddress, signer);
+
+    // Step 4: Add liquidity
+    const liquidity = await swap.addLiquidity(
+      pool.poolAddress,
+      liquidityTokenAmount,
+      liquidityQFCAmount,
+      signer,
+    );
+
+    return {
+      token,
+      pool: { poolAddress: pool.poolAddress, txHash: pool.txHash, explorerUrl: pool.explorerUrl },
+      liquidity: {
+        lpMinted: liquidity.lpMinted,
+        amountToken: liquidityTokenAmount,
+        amountWQFC: liquidityQFCAmount,
+        txHash: liquidity.txHash,
+      },
+    };
   }
 
   /** Get token metadata (name, symbol, decimals, totalSupply) */

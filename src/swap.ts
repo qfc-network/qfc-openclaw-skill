@@ -26,6 +26,92 @@ const SWAP_ABI = [
   'event Swap(address indexed user, address tokenIn, uint256 amountIn, address tokenOut, uint256 amountOut)',
 ];
 
+const WQFC_ABI = [
+  'function deposit() payable',
+  'function withdraw(uint256 amount)',
+  'function balanceOf(address) view returns (uint256)',
+  'function approve(address spender, uint256 amount) returns (bool)',
+  'function allowance(address owner, address spender) view returns (uint256)',
+  'function totalSupply() view returns (uint256)',
+  'function transfer(address to, uint256 amount) returns (bool)',
+  'function transferFrom(address from, address to, uint256 amount) returns (bool)',
+  'function name() view returns (string)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)',
+];
+
+/**
+ * Pre-compiled WQFC (Wrapped QFC) bytecode (Solidity 0.8.34, evmVersion: paris, optimizer: 200 runs).
+ * No constructor args.
+ */
+const WQFC_DEPLOY_BYTECODE = '0x60c0604052600b60809081526a577261707065642051464360a81b60a05260009061002a9082610112565b506040805180820190915260048152635751464360e01b60208201526001906100539082610112565b5034801561006057600080fd5b506101d4565b634e487b7160e01b600052604160045260246000fd5b600181811c9082168061009057607f821691505b6020821081036100b057634e487b7160e01b600052602260045260246000fd5b50919050565b601f82111561010d578282111561010d57806000526020600020601f840160051c60208510156100e4575060005b90810190601f840160051c0360005b81811015610109576000838201556001016100f3565b5050505b505050565b81516001600160401b0381111561012b5761012b610066565b61013f81610139845461007c565b846100b6565b6020601f821160018114610173576000831561015b5750848201515b600019600385901b1c1916600184901b1784556101cd565b600084815260208120601f198516915b828110156101a35787850151825560209485019460019092019101610183565b50848210156101c15786840151600019600387901b60f8161c191681555b505060018360011b0184555b5050505050565b6109c3806101e36000396000f3fe6080604052600436106100a05760003560e01c8063313ce56711610064578063313ce5671461017357806370a082311461019a57806395d89b41146101c7578063a9059cbb146101dc578063d0e30db0146101fc578063dd62ed3e1461020457600080fd5b806306fdde03146100b4578063095ea7b3146100df57806318160ddd1461010f57806323b872dd146101335780632e1a7d4d1461015357600080fd5b366100af576100ad61023c565b005b600080fd5b3480156100c057600080fd5b506100c961031a565b6040516100d69190610792565b60405180910390f35b3480156100eb57600080fd5b506100ff6100fa3660046107fc565b6103a8565b60405190151581526020016100d6565b34801561011b57600080fd5b5061012560045481565b6040519081526020016100d6565b34801561013f57600080fd5b506100ff61014e366004610826565b610415565b34801561015f57600080fd5b506100ad61016e366004610863565b610585565b34801561017f57600080fd5b50610188601281565b60405160ff90911681526020016100d6565b3480156101a657600080fd5b506101256101b536600461087c565b60026020526000908152604090205481565b3480156101d357600080fd5b506100c96106da565b3480156101e857600080fd5b506100ff6101f73660046107fc565b6106e7565b6100ad61023c565b34801561021057600080fd5b5061012561021f36600461089e565b600360209081526000928352604080842090915290825290205481565b600034116102805760405162461bcd60e51b815260206004820152600c60248201526b1e995c9bc819195c1bdcda5d60a21b60448201526064015b60405180910390fd5b336000908152600260205260408120805434929061029f9084906108e7565b9250508190555034600460008282546102b891906108e7565b909155505060405134815233907fe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c9060200160405180910390a2604051348152339060009060008051602061096e8339815191529060200160405180910390a3565b60008054610327906108fa565b80601f0160208091040260200160405190810160405280929190818152602001828054610353906108fa565b80156103a05780601f10610375576101008083540402835291602001916103a0565b820191906000526020600020905b81548152906001019060200180831161038357829003601f168201915b505050505081565b3360008181526003602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925906104039086815260200190565b60405180910390a35060015b92915050565b6001600160a01b03831660009081526003602090815260408083203384529091528120548211156104745760405162461bcd60e51b8152602060048201526009602482015268616c6c6f77616e636560b81b6044820152606401610277565b6001600160a01b0384166000908152600260205260409020548211156104ac5760405162461bcd60e51b815260040161027790610934565b6001600160a01b0384166000908152600360209081526040808320338452909152812080548492906104df90849061095a565b90915550506001600160a01b0384166000908152600260205260408120805484929061050c90849061095a565b90915550506001600160a01b038316600090815260026020526040812080548492906105399084906108e7565b92505081905550826001600160a01b0316846001600160a01b031660008051602061096e8339815191528460405161057391815260200190565b60405180910390a35060019392505050565b336000908152600260205260409020548111156105b45760405162461bcd60e51b815260040161027790610934565b33600090815260026020526040812080548392906105d390849061095a565b9250508190555080600460008282546105ec919061095a565b9091555050604051600090339083908381818185875af1925050503d8060008114610633576040519150601f19603f3d011682016040523d82523d6000602084013e610638565b606091505b505090508061067b5760405162461bcd60e51b815260206004820152600f60248201526e1d1c985b9cd9995c8819985a5b1959608a1b6044820152606401610277565b60405182815233907f7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b659060200160405180910390a2604051828152600090339060008051602061096e8339815191529060200160405180910390a35050565b60018054610327906108fa565b336000908152600260205260408120548211156107165760405162461bcd60e51b815260040161027790610934565b336000908152600260205260408120805484929061073590849061095a565b90915550506001600160a01b038316600090815260026020526040812080548492906107629084906108e7565b90915550506040518281526001600160a01b03841690339060008051602061096e83398151915290602001610403565b602081526000825180602084015260005b818110156107c057602081860181015160408684010152016107a3565b506000604082850101526040601f19601f83011684010191505092915050565b80356001600160a01b03811681146107f757600080fd5b919050565b6000806040838503121561080f57600080fd5b610818836107e0565b946020939093013593505050565b60008060006060848603121561083b57600080fd5b610844846107e0565b9250610852602085016107e0565b929592945050506040919091013590565b60006020828403121561087557600080fd5b5035919050565b60006020828403121561088e57600080fd5b610897826107e0565b9392505050565b600080604083850312156108b157600080fd5b6108ba836107e0565b91506108c8602084016107e0565b90509250929050565b634e487b7160e01b600052601160045260246000fd5b8082018082111561040f5761040f6108d1565b600181811c9082168061090e57607f821691505b60208210810361092e57634e487b7160e01b600052602260045260246000fd5b50919050565b6020808252600c908201526b1a5b9cdd59999a58da595b9d60a21b604082015260600190565b8181038181111561040f5761040f6108d156feddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3efa2646970667358221220a4c6f56d1d54e8da68fb3018de24281f1fc7aa2bb2cde4b696a1c4eb63bac81364736f6c63430008220033';
+
+/**
+ * Solidity source code for the WQFC contract.
+ */
+export const WQFC_SOURCE_CODE = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract WQFC {
+    string public name = "Wrapped QFC";
+    string public symbol = "WQFC";
+    uint8 public constant decimals = 18;
+
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+    uint256 public totalSupply;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Deposit(address indexed account, uint256 amount);
+    event Withdrawal(address indexed account, uint256 amount);
+
+    receive() external payable { deposit(); }
+
+    function deposit() public payable {
+        require(msg.value > 0, "zero deposit");
+        balanceOf[msg.sender] += msg.value;
+        totalSupply += msg.value;
+        emit Deposit(msg.sender, msg.value);
+        emit Transfer(address(0), msg.sender, msg.value);
+    }
+
+    function withdraw(uint256 amount) external {
+        require(balanceOf[msg.sender] >= amount, "insufficient");
+        balanceOf[msg.sender] -= amount;
+        totalSupply -= amount;
+        (bool ok, ) = msg.sender.call{value: amount}("");
+        require(ok, "transfer failed");
+        emit Withdrawal(msg.sender, amount);
+        emit Transfer(msg.sender, address(0), amount);
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        require(balanceOf[msg.sender] >= amount, "insufficient");
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+        emit Transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        require(allowance[from][msg.sender] >= amount, "allowance");
+        require(balanceOf[from] >= amount, "insufficient");
+        allowance[from][msg.sender] -= amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        emit Transfer(from, to, amount);
+        return true;
+    }
+}
+`;
+
 /**
  * Pre-compiled SimpleSwap AMM bytecode (Solidity 0.8.34, evmVersion: paris, optimizer: 200 runs).
  * Constructor: (address tokenA, address tokenB)
@@ -136,6 +222,19 @@ contract SimpleSwap {
     }
 }
 `;
+
+export interface WQFCDeployResult {
+  wqfcAddress: string;
+  txHash: string;
+  explorerUrl: string;
+}
+
+export interface WrapResult {
+  wqfcAddress: string;
+  amount: string;
+  txHash: string;
+  explorerUrl: string;
+}
 
 export interface PoolDeployResult {
   poolAddress: string;
@@ -531,6 +630,143 @@ export class QFCSwap {
       txHash: tx.hash,
       explorerUrl: `${this.networkConfig.explorerUrl}/txs/${tx.hash}`,
     };
+  }
+
+  /**
+   * Deploy the canonical WQFC (Wrapped QFC) contract.
+   */
+  async deployWQFC(signer: ethers.Wallet): Promise<WQFCDeployResult> {
+    const connected = signer.connect(this.provider);
+    const factory = new ethers.ContractFactory(WQFC_ABI, WQFC_DEPLOY_BYTECODE, connected);
+    const deployTx = await factory.getDeployTransaction();
+    deployTx.gasLimit = 1_000_000n;
+
+    const tx = await connected.sendTransaction(deployTx);
+    const receipt = await this.waitForReceipt(tx.hash);
+
+    if (receipt.status !== '0x1') {
+      throw new Error(`WQFC deployment reverted (tx: ${tx.hash})`);
+    }
+
+    // Best-effort verification
+    try {
+      const verifyUrl = `${this.networkConfig.explorerUrl}/api/contracts/verify`;
+      await fetch(verifyUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: receipt.contractAddress,
+          sourceCode: WQFC_SOURCE_CODE,
+          compilerVersion: 'v0.8.34+commit.1c8745a5',
+          evmVersion: 'paris',
+          optimizationRuns: 200,
+        }),
+      });
+    } catch {
+      // Explorer unavailable
+    }
+
+    return {
+      wqfcAddress: receipt.contractAddress,
+      txHash: tx.hash,
+      explorerUrl: `${this.networkConfig.explorerUrl}/contract/${receipt.contractAddress}`,
+    };
+  }
+
+  /**
+   * Wrap native QFC into WQFC (ERC-20).
+   * @param wqfcAddress - deployed WQFC contract address
+   * @param amount - amount of QFC to wrap (human-readable, e.g. "10.5")
+   * @param signer - wallet holding native QFC
+   */
+  async wrapQFC(wqfcAddress: string, amount: string, signer: ethers.Wallet): Promise<WrapResult> {
+    const connected = signer.connect(this.provider);
+    const wqfc = new ethers.Contract(wqfcAddress, WQFC_ABI, connected);
+    const parsedAmount = ethers.parseEther(amount);
+
+    const tx = await wqfc.deposit({ value: parsedAmount, gasLimit: 100_000n });
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') throw new Error(`Wrap failed (tx: ${tx.hash})`);
+
+    return {
+      wqfcAddress,
+      amount,
+      txHash: tx.hash,
+      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${tx.hash}`,
+    };
+  }
+
+  /**
+   * Unwrap WQFC back to native QFC.
+   * @param wqfcAddress - deployed WQFC contract address
+   * @param amount - amount of WQFC to unwrap (human-readable)
+   * @param signer - wallet holding WQFC
+   */
+  async unwrapQFC(wqfcAddress: string, amount: string, signer: ethers.Wallet): Promise<WrapResult> {
+    const connected = signer.connect(this.provider);
+    const wqfc = new ethers.Contract(wqfcAddress, WQFC_ABI, connected);
+    const parsedAmount = ethers.parseEther(amount);
+
+    const tx = await wqfc.withdraw(parsedAmount, { gasLimit: 100_000n });
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') throw new Error(`Unwrap failed (tx: ${tx.hash})`);
+
+    return {
+      wqfcAddress,
+      amount,
+      txHash: tx.hash,
+      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${tx.hash}`,
+    };
+  }
+
+  /**
+   * Swap native QFC for a token via WQFC pool (auto-wrap + swap).
+   * @param poolAddress - pool with WQFC as one of the tokens
+   * @param wqfcAddress - WQFC contract address
+   * @param amountQFC - amount of native QFC to swap (human-readable)
+   * @param signer - wallet
+   * @param slippagePct - max slippage (default 1%)
+   */
+  async swapQFCForToken(
+    poolAddress: string,
+    wqfcAddress: string,
+    amountQFC: string,
+    signer: ethers.Wallet,
+    slippagePct: number = 1,
+  ): Promise<SwapResult> {
+    // Step 1: wrap QFC → WQFC
+    await this.wrapQFC(wqfcAddress, amountQFC, signer);
+    // Step 2: swap WQFC → token
+    return this.swap(poolAddress, wqfcAddress, amountQFC, signer, slippagePct);
+  }
+
+  /**
+   * Swap a token for native QFC via WQFC pool (swap + auto-unwrap).
+   * @param poolAddress - pool with WQFC as one of the tokens
+   * @param wqfcAddress - WQFC contract address
+   * @param tokenIn - token to sell
+   * @param amountIn - amount to sell (human-readable)
+   * @param signer - wallet
+   * @param slippagePct - max slippage (default 1%)
+   */
+  async swapTokenForQFC(
+    poolAddress: string,
+    wqfcAddress: string,
+    tokenIn: string,
+    amountIn: string,
+    signer: ethers.Wallet,
+    slippagePct: number = 1,
+  ): Promise<SwapResult> {
+    // Step 1: swap token → WQFC
+    const result = await this.swap(poolAddress, tokenIn, amountIn, signer, slippagePct);
+    // Step 2: unwrap all WQFC → QFC
+    const connected = signer.connect(this.provider);
+    const wqfc = new ethers.Contract(wqfcAddress, WQFC_ABI, connected);
+    const balance = await wqfc.balanceOf(connected.address);
+    if (balance > 0n) {
+      await this.unwrapQFC(wqfcAddress, ethers.formatEther(balance), signer);
+    }
+    return result;
   }
 
   /**

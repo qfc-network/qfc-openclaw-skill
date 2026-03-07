@@ -198,74 +198,70 @@ AI inference integration, contract interaction, and OpenClaw best-practice align
 
 ---
 
-## v3.0 (Planned)
+## v3.0 (Current)
 
 > DeFi infrastructure — wrapped QFC, token launchpad, NFT marketplace, and multi-call.
 
-### Phase 17: Wrapped QFC (WQFC) (High Priority)
+### Phase 17: Wrapped QFC (WQFC) (High Priority) -- DONE
 
-> Required for native QFC to work with the DEX and DeFi contracts.
-
-- [ ] WQFC contract (ERC-20 wrapper for native QFC)
+- [x] WQFC contract (Solidity 0.8.34, paris, optimizer 200)
   - `deposit()` payable — wrap QFC → WQFC
   - `withdraw(amount)` — unwrap WQFC → QFC
   - Standard ERC-20 interface (transfer, approve, etc.)
-- [ ] `QFCSwap.wrapQFC(amount, signer)` — wrap native QFC into WQFC
-- [ ] `QFCSwap.unwrapQFC(amount, signer)` — unwrap WQFC back to native QFC
-- [ ] `QFCSwap.swapQFCForToken(poolAddress, amountIn, signer)` — auto-wrap + swap in one call
-- [ ] Deploy canonical WQFC contract on testnet, hardcode address in config
+- [x] `QFCSwap.deployWQFC(signer)` — deploy WQFC contract
+- [x] `QFCSwap.wrapQFC(wqfcAddress, amount, signer)` — wrap native QFC into WQFC
+- [x] `QFCSwap.unwrapQFC(wqfcAddress, amount, signer)` — unwrap WQFC back to native QFC
+- [x] `QFCSwap.swapQFCForToken(poolAddress, wqfcAddress, amountQFC, signer)` — auto-wrap + swap
+- [x] `QFCSwap.swapTokenForQFC(poolAddress, wqfcAddress, tokenIn, amountIn, signer)` — swap + auto-unwrap
+- [x] Exported `WQFC_SOURCE_CODE` for verification
 
-### Phase 18: Token Launchpad (High Priority)
+### Phase 18: Token Launchpad (High Priority) -- DONE
 
-> One-command token launch: deploy token + create pool + add initial liquidity.
-
-- [ ] `QFCToken.launch(name, symbol, supply, initialLiquidityQFC, signer)`
-  - Deploy mintable ERC-20
-  - Deploy WQFC pool (or use existing canonical WQFC)
+- [x] `QFCToken.launch(name, symbol, supply, liquidityTokenAmount, liquidityQFCAmount, wqfcAddress, signer)`
+  - Deploy ERC-20 token (standard or mintable)
+  - Wrap QFC → WQFC
+  - Deploy WQFC pool
   - Approve + add initial liquidity (token + WQFC)
-  - Return token address, pool address, explorer URLs
-- [ ] `references/token-launchpad.md` — step-by-step guide
+  - Return token address, pool address, LP details
 
-### Phase 19: NFT Marketplace (Medium Priority)
+### Phase 19: NFT Marketplace (Medium Priority) -- DONE
 
-> List, buy, and sell NFTs with a simple on-chain marketplace contract.
-
-- [ ] Marketplace contract
+- [x] NFTMarketplace contract (Solidity 0.8.34, paris, optimizer 200)
   - `list(nftContract, tokenId, price)` — list NFT for sale (native QFC)
-  - `buy(listingId)` payable — purchase listed NFT
+  - `buy(listingId)` payable — purchase listed NFT (auto-refund excess)
   - `cancel(listingId)` — cancel listing (seller only)
-  - `getListings()` — view active listings
-  - `getListingsByCollection(nftContract)` — filter by collection
-- [ ] `QFCMarketplace` class (`src/marketplace.ts`)
-  - `deploy(signer)` — deploy marketplace contract
-  - `listNFT(marketplace, nftContract, tokenId, priceQFC, signer)`
-  - `buyNFT(marketplace, listingId, signer)`
-  - `cancelListing(marketplace, listingId, signer)`
-  - `getListings(marketplace)` / `getListingsByCollection(marketplace, nftContract)`
-- [ ] Auto-approve NFT transfer to marketplace on listing
+  - `getListing(listingId)` — view listing details
+  - `getActiveListingCount()` — count active listings
+- [x] `QFCMarketplace` class (`src/marketplace.ts`)
+  - [x] `deploy(signer)` — deploy marketplace contract
+  - [x] `listNFT(marketplace, nftContract, tokenId, priceQFC, signer)` — auto-approves NFT
+  - [x] `buyNFT(marketplace, listingId, signer)` — purchase with QFC
+  - [x] `cancelListing(marketplace, listingId, signer)`
+  - [x] `getListing(marketplace, listingId)` — single listing
+  - [x] `getListings(marketplace)` — all active listings
+  - [x] `getListingsByCollection(marketplace, nftContract)` — filter by collection
+- [x] Exported `MARKETPLACE_SOURCE_CODE` for verification
 
-### Phase 20: Multi-Call (Low Priority)
+### Phase 20: Multi-Call (Low Priority) -- DONE
 
-> Batch multiple read calls into a single RPC request for performance.
+- [x] Multicall3 contract (Solidity 0.8.34, paris, optimizer 200)
+  - `aggregate3(calls[])` — batch staticcall, return results
+- [x] `QFCMulticall` class (`src/multicall.ts`)
+  - [x] `deploy(signer)` — deploy Multicall3 contract
+  - [x] `call(multicallAddress, calls[])` — batch contract reads
+  - [x] `getTokenBalances(multicallAddress, tokens[], owner)` — batch balanceOf
+  - [x] `getPoolReserves(multicallAddress, pools[])` — batch reserve queries
+- [x] Exported `MULTICALL_SOURCE_CODE` for verification
 
-- [ ] Multicall3 contract (pre-compiled)
-  - `aggregate3(calls[])` — batch view calls, return results
-- [ ] `QFCMulticall` class (`src/multicall.ts`)
-  - `call(calls[])` — batch multiple contract reads in one RPC
-  - `getTokenBalances(tokens[], owner)` — batch balanceOf for many tokens
-  - `getPoolReserves(pools[])` — batch reserve queries for multiple pools
-- [ ] Use multicall internally in `getPortfolio()` for better performance
+### Phase 21: Event Subscriptions (Low Priority) -- DONE
 
-### Phase 21: Event Subscriptions (Low Priority)
-
-> Watch for on-chain events in real-time (new transfers, swaps, listings).
-
-- [ ] `QFCEvents` class (`src/events.ts`)
-  - `watchTransfers(tokenAddress, callback)` — ERC-20 Transfer events
-  - `watchSwaps(poolAddress, callback)` — Swap events on AMM pool
-  - `watchNFTSales(marketplace, callback)` — NFT sale events
-  - `watchBlocks(callback)` — new block notifications
-- [ ] Uses polling (QFC doesn't support WebSocket subscriptions yet)
+- [x] `QFCEvents` class (`src/events.ts`)
+  - [x] `watchTransfers(tokenAddress, callback)` — ERC-20 Transfer events
+  - [x] `watchSwaps(poolAddress, callback)` — Swap events on AMM pool
+  - [x] `watchNFTSales(marketplace, callback)` — marketplace Sold events
+  - [x] `watchBlocks(callback)` — new block notifications
+- [x] Uses polling (QFC doesn't support WebSocket subscriptions yet)
+- [x] All watchers return `{ stop() }` for cleanup
 
 ---
 
