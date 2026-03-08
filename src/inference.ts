@@ -10,7 +10,14 @@ export interface InferenceTaskStatus {
   createdAt: number;
   deadline: number;
   maxFee: string;
+  /** How the result is stored: 'inline' (embedded in `result`) or 'ipfs' (fetch via `resultCid`) */
+  resultType?: 'inline' | 'ipfs';
+  /** Base64-encoded result (present when resultType is 'inline') */
   result?: string;
+  /** IPFS CID of the result (present when resultType is 'ipfs') */
+  resultCid?: string;
+  /** Base64-encoded preview of the first ~1KB (present when resultType is 'ipfs') */
+  resultPreview?: string;
   resultSize?: number;
   minerAddress?: string;
   executionTimeMs?: number;
@@ -146,8 +153,52 @@ export class QFCInference {
   }
 
   /**
+   * Fetch the full IPFS result for a given CID via the node's gateway proxy.
+   * Calls `qfc_getInferenceResult` and returns the base64-encoded content.
+   *
+   * @param cid - IPFS content identifier (e.g. "QmXYZ...")
+   * @returns Base64-encoded result payload
+   */
+  async fetchIpfsResult(cid: string): Promise<string> {
+    return rpcCall(this.provider, 'qfc_getInferenceResult', [cid]);
+  }
+
+  /**
+   * Unified method to retrieve the result of a completed inference task,
+   * regardless of whether it was stored inline or on IPFS.
+   *
+   * - If `resultType` is `'inline'`, returns the `result` field directly.
+   * - If `resultType` is `'ipfs'`, fetches the full content via `fetchIpfsResult`.
+   * - For legacy responses without `resultType`, falls back to `result`.
+   *
+   * @param taskId - Task ID (hex)
+   * @returns Base64-encoded result string
+   * @throws If the task has no result or is not completed
+   */
+  async getResult(taskId: string): Promise<string> {
+    const status = await this.getTaskStatus(taskId);
+    if (status.status !== 'Completed') {
+      throw new Error(`Task ${taskId} is not completed (status: ${status.status})`);
+    }
+
+    if (status.resultType === 'ipfs') {
+      if (!status.resultCid) {
+        throw new Error(`Task ${taskId} has resultType 'ipfs' but no resultCid`);
+      }
+      return this.fetchIpfsResult(status.resultCid);
+    }
+
+    // inline or legacy (no resultType field)
+    if (!status.result) {
+      throw new Error(`Task ${taskId} is completed but has no result`);
+    }
+    return status.result;
+  }
+
+  /**
    * Decode a base64 result payload from a completed task.
-   * Result format: JSON envelope with base64-encoded output.
+   * Works with both inline and IPFS-fetched results — both are base64-encoded
+   * JSON envelopes with the same structure.
    */
   decodeResult(base64Result: string): DecodedResult {
     const envelope = JSON.parse(base64Result);
