@@ -139,14 +139,14 @@ export class QFCInference {
     return result.taskId;
   }
 
-  /** Estimate the fee for an inference task (note: may not be implemented on all nodes yet) */
-  async estimateFee(modelId: string, inputSize: number = 0): Promise<FeeEstimate> {
+  /** Estimate the fee for an inference task */
+  async estimateFee(modelId: string, taskType: string = 'TextEmbedding', inputSize: number = 0): Promise<FeeEstimate> {
     const raw = await rpcCall(this.provider, 'qfc_estimateInferenceFee', [
-      { modelId, inputSize },
+      { modelId, taskType, inputSize },
     ]);
     return {
-      baseFee: ethers.formatEther(raw.baseFee),
-      model: raw.model,
+      baseFee: ethers.formatEther(BigInt(raw.baseFee)),
+      model: raw.modelId,
       gpuTier: raw.gpuTier,
       estimatedTimeMs: Number(raw.estimatedTimeMs),
     };
