@@ -136,7 +136,7 @@ export class QFCInference {
     const result = await rpcCall(this.provider, 'qfc_submitPublicTask', [
       { ...payload, signature },
     ]);
-    return result.taskId;
+    return typeof result === 'string' ? result : result.taskId;
   }
 
   /** Estimate the fee for an inference task */
