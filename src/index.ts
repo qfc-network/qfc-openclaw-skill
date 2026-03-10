@@ -8,6 +8,7 @@ export { QFCNetwork } from './network.js';
 export { QFCStaking } from './staking.js';
 export { QFCEpoch } from './epoch.js';
 export { QFCInference } from './inference.js';
+export type { SubmitTaskRequest, InferenceTaskStatus, InferenceModel } from './inference.js';
 export { QFCContract } from './contract.js';
 export { QFCToken, ERC20_SOURCE_CODE, MINTABLE_SOURCE_CODE, AIRDROP_SOURCE_CODE } from './token.js';
 export type { DeployTokenResult, PortfolioResult, PortfolioItem, TransferHistoryResult, TokenTransfer, BatchTransferItem, BatchTransferResult, AirdropDeployResult, AirdropResult, LaunchResult } from './token.js';
