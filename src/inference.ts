@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 
 export interface InferenceTaskStatus {
   taskId: string;
-  status: 'Pending' | 'Assigned' | 'Completed' | 'Failed' | 'Expired';
+  status: 'Pending' | 'Assigned' | 'Completed' | 'Failed' | 'Expired' | 'NotFound';
   submitter: string;
   taskType: string;
   modelId: string;
@@ -83,7 +83,23 @@ export class QFCInference {
 
   /** Query the status of a submitted inference task */
   async getTaskStatus(taskId: string): Promise<InferenceTaskStatus> {
-    return rpcCall(this.provider, 'qfc_getPublicTaskStatus', [taskId]);
+    try {
+      return await rpcCall(this.provider, 'qfc_getPublicTaskStatus', [taskId]);
+    } catch (err: any) {
+      if (typeof err?.message === 'string' && err.message.includes('Task not found')) {
+        return {
+          taskId,
+          status: 'NotFound',
+          submitter: '',
+          taskType: '',
+          modelId: '',
+          createdAt: 0,
+          deadline: 0,
+          maxFee: '0',
+        } as InferenceTaskStatus;
+      }
+      throw err;
+    }
   }
 
   /**
@@ -98,9 +114,28 @@ export class QFCInference {
     intervalMs: number = 2_000,
   ): Promise<InferenceTaskStatus> {
     const deadline = Date.now() + timeoutMs;
+    let sawInProgress = false;
     while (Date.now() < deadline) {
       const status = await this.getTaskStatus(taskId);
+      if (status.status === 'Pending' || status.status === 'Assigned') {
+        sawInProgress = true;
+      }
       if (status.status === 'Completed' || status.status === 'Failed' || status.status === 'Expired') {
+        return status;
+      }
+      // qfc-core #69: completed/expired/failed tasks are deleted from TaskPool,
+      // so getTaskStatus returns NotFound. If we previously saw the task in progress,
+      // treat this as Expired rather than an error.
+      if (status.status === 'NotFound' && sawInProgress) {
+        return {
+          ...status,
+          status: 'Expired',
+          result: undefined,
+          resultType: undefined,
+          _note: 'Task disappeared from TaskPool after being in progress (qfc-core #69). Likely Expired.',
+        } as InferenceTaskStatus & { _note: string };
+      }
+      if (status.status === 'NotFound') {
         return status;
       }
       await new Promise((r) => setTimeout(r, intervalMs));
