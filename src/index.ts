@@ -21,6 +21,8 @@ export { QFCMulticall, MULTICALL_SOURCE_CODE } from './multicall.js';
 export type { MulticallCall, MulticallResult, MulticallDeployResult } from './multicall.js';
 export { QFCEvents } from './events.js';
 export type { EventSubscription, TransferEvent, SwapEvent, BlockEvent } from './events.js';
+export { QFCAgent } from './agent.js';
+export type { AgentPermission, AgentInfo } from './agent.js';
 export { QFCDiscordBot } from './discord.js';
 export type { BotCommand, BotResponse } from './discord.js';
 export { createProvider, getNetworkConfig, rpcCall } from './provider.js';
