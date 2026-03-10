@@ -325,6 +325,9 @@ export interface DeployTokenResult {
   verified?: boolean;
 }
 
+/** Default caller address for eth_call to avoid QFC testnet 'lack of funds' validation */
+const DEFAULT_CALL_FROM = '0x0000000000000000000000000000000000000001';
+
 /**
  * QFCToken — ERC-20 token operations on QFC.
  */
@@ -569,11 +572,12 @@ export class QFCToken {
   /** Get token metadata (name, symbol, decimals, totalSupply) */
   async getTokenInfo(tokenAddress: string): Promise<TokenInfo> {
     const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    const callOverrides = { from: DEFAULT_CALL_FROM };
     const [name, symbol, decimals, totalSupply] = await Promise.all([
-      contract.name(),
-      contract.symbol(),
-      contract.decimals(),
-      contract.totalSupply(),
+      contract.name(callOverrides),
+      contract.symbol(callOverrides),
+      contract.decimals(callOverrides),
+      contract.totalSupply(callOverrides),
     ]);
     return {
       address: tokenAddress,
@@ -587,10 +591,11 @@ export class QFCToken {
   /** Get token balance for an address */
   async getBalance(tokenAddress: string, owner: string): Promise<TokenBalance> {
     const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    const callOverrides = { from: DEFAULT_CALL_FROM };
     const [symbol, decimals, balance] = await Promise.all([
-      contract.symbol(),
-      contract.decimals(),
-      contract.balanceOf(owner),
+      contract.symbol(callOverrides),
+      contract.decimals(callOverrides),
+      contract.balanceOf(owner, callOverrides),
     ]);
     const dec = Number(decimals);
     return {
@@ -665,9 +670,10 @@ export class QFCToken {
     spender: string,
   ): Promise<string> {
     const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    const callOverrides = { from: DEFAULT_CALL_FROM };
     const [decimals, allowance] = await Promise.all([
-      contract.decimals(),
-      contract.allowance(owner, spender),
+      contract.decimals(callOverrides),
+      contract.allowance(owner, spender, callOverrides),
     ]);
     return ethers.formatUnits(allowance, decimals);
   }
@@ -699,11 +705,12 @@ export class QFCToken {
     const results = await Promise.allSettled(
       tokenAddresses.map(async (token) => {
         const contract = new ethers.Contract(token.address, ERC20_ABI, this.provider);
+        const co = { from: DEFAULT_CALL_FROM };
         const [balance, name, symbol, decimals] = await Promise.all([
-          contract.balanceOf(owner),
-          token.name ?? contract.name(),
-          token.symbol ?? contract.symbol(),
-          token.decimals ?? contract.decimals(),
+          contract.balanceOf(owner, co),
+          token.name ?? contract.name(co),
+          token.symbol ?? contract.symbol(co),
+          token.decimals ?? contract.decimals(co),
         ]);
         return { address: token.address, name, symbol, decimals: Number(decimals), balance };
       }),
@@ -750,7 +757,7 @@ export class QFCToken {
     let tokenSymbol = '';
     try {
       const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
-      tokenSymbol = await contract.symbol();
+      tokenSymbol = await contract.symbol({ from: DEFAULT_CALL_FROM });
     } catch {
       tokenSymbol = 'UNKNOWN';
     }
