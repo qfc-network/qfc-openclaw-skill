@@ -236,7 +236,8 @@ export class QFCInference {
    * JSON envelopes with the same structure.
    */
   decodeResult(base64Result: string): DecodedResult {
-    const envelope = JSON.parse(base64Result);
+    const json = Buffer.from(base64Result, 'base64').toString('utf-8');
+    const envelope = JSON.parse(json);
     const outputRaw = Buffer.from(envelope.output_base64, 'base64').toString('utf-8');
     let output: any;
     try {

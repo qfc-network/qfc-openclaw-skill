@@ -625,10 +625,13 @@ export class QFCToken {
     const decimals = await contract.decimals();
     const parsedAmount = ethers.parseUnits(amount, decimals);
     const tx = await contract.transfer(to, parsedAmount);
-    const receipt = await tx.wait();
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') {
+      throw new Error(`Transfer reverted (tx: ${tx.hash})`);
+    }
     return {
-      txHash: receipt.hash,
-      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${receipt.hash}`,
+      txHash: tx.hash,
+      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${tx.hash}`,
     };
   }
 
@@ -651,10 +654,13 @@ export class QFCToken {
     const parsedAmount =
       amount === 'max' ? ethers.MaxUint256 : ethers.parseUnits(amount, decimals);
     const tx = await contract.approve(spender, parsedAmount);
-    const receipt = await tx.wait();
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') {
+      throw new Error(`Approve reverted (tx: ${tx.hash})`);
+    }
     return {
-      txHash: receipt.hash,
-      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${receipt.hash}`,
+      txHash: tx.hash,
+      explorerUrl: `${this.networkConfig.explorerUrl}/txs/${tx.hash}`,
     };
   }
 
