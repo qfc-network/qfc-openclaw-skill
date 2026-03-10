@@ -77,14 +77,6 @@ export class QFCInference {
     this.provider = createProvider(network);
   }
 
-  /**
-   * Submit a public inference task.
-   * @returns Task ID (hex string)
-   */
-  async submitTask(request: SubmitTaskRequest): Promise<string> {
-    return rpcCall(this.provider, 'qfc_submitPublicTask', [request]);
-  }
-
   /** List approved models */
   async getModels(): Promise<InferenceModel[]> {
     return rpcCall(this.provider, 'qfc_getSupportedModels', []);

@@ -26,5 +26,7 @@ export { QFCAgent } from './agent.js';
 export type { AgentPermission, AgentInfo } from './agent.js';
 export { QFCDiscordBot } from './discord.js';
 export type { BotCommand, BotResponse } from './discord.js';
+export { QFCMinerMonitor } from './miner-monitor.js';
+export type { MinerEarning, MinerStatus, MinerMonitorOptions } from './miner-monitor.js';
 export { createProvider, getNetworkConfig, rpcCall } from './provider.js';
 export type { NetworkName, NetworkConfig } from './provider.js';
