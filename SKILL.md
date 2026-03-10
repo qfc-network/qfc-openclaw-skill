@@ -124,6 +124,18 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Custom Prefix**: Configurable command prefix (default `!`)
 - **Example Script**: See `scripts/discord-bot-example.mjs` for discord.js integration pattern
 
+### Agent Registry (v3.2)
+- **Register Agent**: Register an AI agent on-chain with permissions, daily spending limit, max-per-tx limit, and initial QFC deposit
+- **Fund Agent**: Top up an agent's on-chain deposit with additional QFC
+- **Revoke Agent**: Deactivate a registered agent on the registry
+- **Get Agent**: Query agent info by ID (owner, address, permissions, deposit, daily spend, active status)
+- **List Agents**: List all agent IDs owned by an address
+- **Issue Session Key**: Authorize a session key address for an agent with a time-limited duration
+- **Rotate Session Key**: Atomically revoke an old session key and issue a new one
+- **Revoke Session Key**: Immediately deactivate a session key
+- **Get Session Key**: Query session key details (expiration, active status)
+- **Validate Session Key**: Check if a session key address is currently valid
+
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
 - **Inference Stats**: Network-wide statistics (tasks completed, active miners, avg time, FLOPS, pass rate)
@@ -168,6 +180,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | `marketplace` | `QFCMarketplace` | NFT marketplace (list/buy/sell) |
 | `multicall` | `QFCMulticall` | Batch contract reads in single RPC |
 | `events` | `QFCEvents` | Event subscriptions via polling |
+| `agent` | `QFCAgent` | AI agent registry — register, fund, revoke, session keys |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -417,6 +430,39 @@ Check the status of inference task 0xdef456...
 Show me QFC inference network statistics
 ```
 
+### Agent Registry
+```
+Register an AI agent called "my-agent" with Transfer permission, 100 QFC daily limit, 10 QFC max per tx, and 5 QFC deposit
+```
+
+```
+Fund agent "my-agent" with 50 QFC
+```
+
+```
+Issue a session key for agent "my-agent" to address 0x1234... valid for 1 hour
+```
+
+```
+Rotate the session key for agent "my-agent" from 0xOLD... to 0xNEW... with 2 hour validity
+```
+
+```
+Revoke the session key at 0x1234... for agent "my-agent"
+```
+
+```
+Is session key 0x1234... still valid?
+```
+
+```
+Show info for agent "my-agent"
+```
+
+```
+List all agents owned by 0xfe913E97238B28abac7a55173f5878fD29147210
+```
+
 ### Discord Bot
 ```
 Set up a QFC Discord bot using scripts/discord-bot-example.mjs as a template
@@ -440,3 +486,5 @@ Integrate QFCDiscordBot into my existing Discord bot to handle !balance and !fau
 | MODEL_NOT_FOUND | Unknown model ID | List models with getModels() |
 | TASK_EXPIRED | Inference task timed out | Resubmit with higher fee |
 | FEE_TOO_LOW | Max fee below minimum | Use estimateFee() to get base price |
+| AGENT_NOT_FOUND | Unknown agent ID | Check agentId, list agents with listAgents() |
+| SESSION_KEY_EXPIRED | Session key past expiry | Issue or rotate to a new session key |
