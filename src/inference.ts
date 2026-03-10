@@ -23,6 +23,23 @@ export interface InferenceTaskStatus {
   executionTimeMs?: number;
 }
 
+export interface SubmitTaskRequest {
+  /** Task type, e.g. "text_generation", "speech_to_text" */
+  taskType: string;
+  /** Model identifier, e.g. "qwen2.5-0.5b" */
+  modelId: string;
+  /** Input data (base64-encoded for binary, plain text for text tasks) */
+  inputData: string;
+  /** Maximum fee in wei (hex string, e.g. "0x2386f26fc10000") */
+  maxFee: string;
+  /** Submitter address (hex) */
+  submitter: string;
+  /** Ed25519 signature over (taskType || modelId || inputData || maxFee) */
+  signature: string;
+  /** Language code for speech_to_text tasks (e.g. "en", "zh") */
+  language?: string;
+}
+
 export interface InferenceModel {
   name: string;
   version: string;
@@ -58,6 +75,14 @@ export class QFCInference {
 
   constructor(network: NetworkName = 'testnet') {
     this.provider = createProvider(network);
+  }
+
+  /**
+   * Submit a public inference task.
+   * @returns Task ID (hex string)
+   */
+  async submitTask(request: SubmitTaskRequest): Promise<string> {
+    return rpcCall(this.provider, 'qfc_submitPublicTask', [request]);
   }
 
   /** List approved models */
