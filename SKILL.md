@@ -2,6 +2,7 @@
 name: qfc-openclaw-skill
 description: QFC blockchain interaction — wallet, faucet, chain queries, staking, epoch & finality, AI inference
 homepage: https://github.com/qfc-network/qfc-openclaw-skill
+license: MIT
 metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 ---
 
