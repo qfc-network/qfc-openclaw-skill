@@ -48,6 +48,34 @@ export interface RegisterAgentResult extends AgentTxResult {
   agentId: string;
 }
 
+/** Reverse mapping from numeric permission to name */
+const PERMISSION_NAMES: Record<number, AgentPermission> = {
+  0: 'InferenceSubmit',
+  1: 'Transfer',
+  2: 'StakeDelegate',
+  3: 'QueryOnly',
+};
+
+/** Preflight check result — returned before tx submission */
+export interface PreflightResult {
+  allowed: boolean;
+  reasons: string[];
+  warnings: string[];
+  agent: AgentInfo | null;
+  sessionKeyValid?: boolean;
+}
+
+/** Options for preflight policy check */
+export interface PreflightOptions {
+  agentId: string;
+  /** Permission required for the operation */
+  requiredPermission?: AgentPermission;
+  /** Amount in QFC the operation will spend */
+  amountQFC?: string;
+  /** Session key address to validate (optional) */
+  sessionKeyAddress?: string;
+}
+
 /** Registry addresses per network */
 const REGISTRY_ADDRESS: Record<NetworkName, string> = {
   testnet: '0x7791dfa4d489f3d524708cbc0caa8689b76322b3',
@@ -399,5 +427,168 @@ export class QFCAgent {
 
     const contract = this.getContract(this.provider);
     return contract.isSessionKeyValid(keyAddress);
+  }
+
+  // ===================================================
+  // Safe Execution Mode — preflight policy checks
+  // ===================================================
+
+  /**
+   * Run preflight policy checks against on-chain state before submitting a tx.
+   * Returns whether the operation is allowed with human-readable deny reasons.
+   *
+   * Checks performed:
+   * - Agent exists and is active
+   * - Required permission is granted
+   * - Amount within per-tx limit (maxPerTx)
+   * - Amount within remaining daily budget (dailyLimit − spentToday)
+   * - Sufficient deposit balance
+   * - Session key validity (if provided)
+   */
+  async preflight(opts: PreflightOptions): Promise<PreflightResult> {
+    this.requireAgentId(opts.agentId);
+
+    const reasons: string[] = [];
+    const warnings: string[] = [];
+    let agent: AgentInfo | null = null;
+    let sessionKeyValid: boolean | undefined;
+
+    // 1. Fetch agent from chain
+    try {
+      agent = await this.getAgent(opts.agentId);
+    } catch {
+      return { allowed: false, reasons: [`Agent "${opts.agentId}" not found on-chain.`], warnings, agent: null };
+    }
+
+    // 2. Active check
+    if (!agent.active) {
+      reasons.push(`Agent "${opts.agentId}" is revoked/inactive.`);
+    }
+
+    // 3. Permission check
+    if (opts.requiredPermission) {
+      const requiredValue = PERMISSION_VALUES[opts.requiredPermission];
+      if (!agent.permissions.includes(requiredValue)) {
+        const granted = agent.permissions
+          .map((p) => PERMISSION_NAMES[p] ?? `unknown(${p})`)
+          .join(', ');
+        reasons.push(
+          `Missing permission "${opts.requiredPermission}". Agent has: [${granted}].`,
+        );
+      }
+    }
+
+    // 4. Amount checks (if spending QFC)
+    if (opts.amountQFC) {
+      const amount = parseFloat(opts.amountQFC);
+      const maxPerTx = parseFloat(agent.maxPerTx);
+      const dailyLimit = parseFloat(agent.dailyLimit);
+      const spentToday = parseFloat(agent.spentToday);
+      const deposit = parseFloat(agent.deposit);
+
+      if (amount > maxPerTx) {
+        reasons.push(
+          `Amount ${opts.amountQFC} QFC exceeds per-tx limit of ${agent.maxPerTx} QFC.`,
+        );
+      }
+
+      const remainingDaily = dailyLimit - spentToday;
+      if (amount > remainingDaily) {
+        reasons.push(
+          `Amount ${opts.amountQFC} QFC exceeds remaining daily budget of ${remainingDaily.toFixed(4)} QFC (limit: ${agent.dailyLimit}, spent: ${agent.spentToday}).`,
+        );
+      } else if (amount > remainingDaily * 0.8) {
+        warnings.push(
+          `This tx uses ${((amount / remainingDaily) * 100).toFixed(0)}% of remaining daily budget (${remainingDaily.toFixed(4)} QFC left).`,
+        );
+      }
+
+      if (amount > deposit) {
+        reasons.push(
+          `Insufficient deposit: ${agent.deposit} QFC available, ${opts.amountQFC} QFC required.`,
+        );
+      } else if (amount > deposit * 0.9) {
+        warnings.push(
+          `Deposit nearly depleted: ${agent.deposit} QFC remaining after this tx.`,
+        );
+      }
+    }
+
+    // 5. Session key check (if provided)
+    if (opts.sessionKeyAddress) {
+      this.requireAddress(opts.sessionKeyAddress, 'sessionKeyAddress');
+      try {
+        sessionKeyValid = await this.isSessionKeyValid(opts.sessionKeyAddress);
+        if (!sessionKeyValid) {
+          reasons.push(
+            `Session key ${opts.sessionKeyAddress} is expired or revoked.`,
+          );
+        }
+      } catch {
+        warnings.push(`Could not verify session key ${opts.sessionKeyAddress} (RPC error).`);
+      }
+    }
+
+    return {
+      allowed: reasons.length === 0,
+      reasons,
+      warnings,
+      agent,
+      sessionKeyValid,
+    };
+  }
+
+  /**
+   * Fund an agent with preflight policy checks (safe mode).
+   * In dry-run mode, returns the preflight result without submitting the tx.
+   */
+  async safeFundAgent(
+    ownerSigner: ethers.Signer,
+    agentId: string,
+    amountQFC: string,
+    opts?: { dryRun?: boolean; sessionKeyAddress?: string },
+  ): Promise<{ preflight: PreflightResult; tx?: AgentTxResult }> {
+    const check = await this.preflight({
+      agentId,
+      amountQFC,
+      requiredPermission: 'Transfer',
+      sessionKeyAddress: opts?.sessionKeyAddress,
+    });
+
+    if (opts?.dryRun || !check.allowed) {
+      return { preflight: check };
+    }
+
+    const tx = await this.fundAgent(ownerSigner, agentId, amountQFC);
+    return { preflight: check, tx };
+  }
+
+  /**
+   * Generic safe execution wrapper: run preflight, then execute a callback if allowed.
+   * In dry-run mode, returns the preflight result without executing.
+   *
+   * @example
+   * ```ts
+   * const result = await agent.safeExecute(
+   *   { agentId: 'my-agent', requiredPermission: 'Transfer', amountQFC: '5' },
+   *   async () => agent.fundAgent(signer, 'my-agent', '5'),
+   * );
+   * if (!result.preflight.allowed) {
+   *   console.log('Denied:', result.preflight.reasons);
+   * }
+   * ```
+   */
+  async safeExecute<T>(
+    opts: PreflightOptions & { dryRun?: boolean },
+    execute: () => Promise<T>,
+  ): Promise<{ preflight: PreflightResult; result?: T }> {
+    const check = await this.preflight(opts);
+
+    if (opts.dryRun || !check.allowed) {
+      return { preflight: check };
+    }
+
+    const result = await execute();
+    return { preflight: check, result };
   }
 }

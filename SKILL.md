@@ -137,6 +137,20 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Get Session Key**: Query session key details (expiration, active status)
 - **Validate Session Key**: Check if a session key address is currently valid
 
+### Safe Execution Mode (v3.3)
+- **Preflight Check**: Query on-chain agent state before submitting any transaction
+  - Verifies agent exists and is active
+  - Checks required permission is granted
+  - Validates amount within per-tx limit (maxPerTx)
+  - Validates amount within remaining daily budget (dailyLimit − spentToday)
+  - Checks sufficient deposit balance
+  - Optionally validates session key is active and not expired
+- **Human-Readable Deny Reasons**: Returns clear explanations for each failed check
+- **Warnings**: Alerts for near-limit conditions (>80% daily budget, >90% deposit used)
+- **Dry-Run Mode**: Run all checks without submitting the transaction (`dryRun: true`)
+- **Safe Fund Agent**: `safeFundAgent()` — preflight + fund in one call
+- **Generic Safe Execute**: `safeExecute()` — preflight + arbitrary callback, blocks if policy denied
+
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
 - **Inference Stats**: Network-wide statistics (tasks completed, active miners, avg time, FLOPS, pass rate)
@@ -464,6 +478,19 @@ Show info for agent "my-agent"
 List all agents owned by 0xfe913E97238B28abac7a55173f5878fD29147210
 ```
 
+### Safe Execution Mode
+```
+Check if agent "my-agent" can spend 50 QFC (dry run, don't submit)
+```
+
+```
+Safely fund agent "my-agent" with 20 QFC — check policy first, then submit if allowed
+```
+
+```
+Run preflight check for agent "my-agent" with Transfer permission and 5 QFC amount
+```
+
 ### Discord Bot
 ```
 Set up a QFC Discord bot using scripts/discord-bot-example.mjs as a template
@@ -489,3 +516,8 @@ Integrate QFCDiscordBot into my existing Discord bot to handle !balance and !fau
 | FEE_TOO_LOW | Max fee below minimum | Use estimateFee() to get base price |
 | AGENT_NOT_FOUND | Unknown agent ID | Check agentId, list agents with listAgents() |
 | SESSION_KEY_EXPIRED | Session key past expiry | Issue or rotate to a new session key |
+| PREFLIGHT_DENIED | Policy check failed | Inspect preflight.reasons[] for details |
+| DAILY_LIMIT_EXCEEDED | Amount exceeds remaining daily budget | Wait for daily reset or increase limit |
+| PER_TX_LIMIT_EXCEEDED | Amount exceeds per-transaction cap | Split into smaller transactions |
+| DEPOSIT_INSUFFICIENT | Agent deposit too low | Fund agent with fundAgent() |
+| PERMISSION_DENIED | Agent lacks required permission | Re-register with correct permissions |

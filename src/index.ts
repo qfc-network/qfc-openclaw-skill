@@ -23,7 +23,7 @@ export type { MulticallCall, MulticallResult, MulticallDeployResult } from './mu
 export { QFCEvents } from './events.js';
 export type { EventSubscription, TransferEvent, SwapEvent, BlockEvent } from './events.js';
 export { QFCAgent } from './agent.js';
-export type { AgentPermission, AgentInfo, SessionKeyInfo, AgentTxResult, RegisterAgentResult } from './agent.js';
+export type { AgentPermission, AgentInfo, SessionKeyInfo, AgentTxResult, RegisterAgentResult, PreflightResult, PreflightOptions } from './agent.js';
 export { QFCDiscordBot } from './discord.js';
 export type { BotCommand, BotResponse } from './discord.js';
 export { QFCMinerMonitor } from './miner-monitor.js';
