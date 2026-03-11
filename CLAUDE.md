@@ -25,6 +25,7 @@ src/
   staking.ts        — QFCStaking: validators, stake, scores
   epoch.ts          — QFCEpoch: epoch & finality
   inference.ts      — QFCInference: AI inference tasks
+  agent-wallet.ts   — AgentWalletClient: session-key-aware agent operations
   contract.ts       — QFCContract: read/write/deploy/verify contracts
   token.ts          — QFCToken: ERC-20 deploy/transfer/mint/burn/airdrop
   swap.ts           — QFCSwap: AMM token swap + WQFC wrapper
