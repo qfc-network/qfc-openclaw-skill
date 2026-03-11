@@ -151,6 +151,15 @@ metadata: {"openclaw":{"requires":{"bins":["node"]}}}
 - **Safe Fund Agent**: `safeFundAgent()` — preflight + fund in one call
 - **Generic Safe Execute**: `safeExecute()` — preflight + arbitrary callback, blocks if policy denied
 
+### Agent Wallet Client (v3.4)
+- **AgentWalletClient**: High-level client wrapping QFCAgent + QFCInference for autonomous agent operations
+- **Session-Key Inference**: Submit inference tasks using a session key instead of the owner's long-lived private key — the on-chain registry validates the session key's permissions and spending limits
+- **Preflight-Guarded Submission**: Automatically runs preflight policy checks before every inference submission (permission, daily budget, deposit balance, session key validity)
+- **Full Agent Lifecycle**: register, fund, revoke, status, list — all through a single client
+- **Session Key Management**: issue, rotate, revoke, validate session keys
+- **Fee Estimation**: Estimate inference cost before submission
+- **Demo Scenarios**: Autonomous Trader, Content Generator, AI Oracle — see `scripts/demo-*.mjs`
+
 ### AI Inference (v2.1)
 - **List Models**: Approved AI models from the on-chain registry (name, version, GPU tier)
 - **Inference Stats**: Network-wide statistics (tasks completed, active miners, avg time, FLOPS, pass rate)
@@ -196,6 +205,7 @@ Mainnet RPC: https://rpc.qfc.network (chain ID: 9001)
 | `multicall` | `QFCMulticall` | Batch contract reads in single RPC |
 | `events` | `QFCEvents` | Event subscriptions via polling |
 | `agent` | `QFCAgent` | AI agent registry — register, fund, revoke, session keys |
+| `agent-wallet` | `AgentWalletClient` | High-level agent wallet — session-key inference, lifecycle, safe execution |
 | `inference` | `QFCInference` | AI inference task submission & results |
 | `provider` | — | Shared provider creation & RPC helper |
 
@@ -489,6 +499,23 @@ Safely fund agent "my-agent" with 20 QFC — check policy first, then submit if 
 
 ```
 Run preflight check for agent "my-agent" with Transfer permission and 5 QFC amount
+```
+
+### Agent Wallet Client
+```
+Create an autonomous trader agent: register "trader-1" with InferenceSubmit and Transfer permissions, 100 QFC daily limit, issue a session key, then submit a sentiment analysis inference using only the session key
+```
+
+```
+Set up a content generator agent with InferenceSubmit-only permission and a 7-day session key
+```
+
+```
+Run an AI oracle: register agent, estimate inference fee, run preflight check, then submit a query — all using the session key
+```
+
+```
+Submit an inference task as agent "my-agent" using session key — model qfc-embed-small, input "Hello world"
 ```
 
 ### Discord Bot

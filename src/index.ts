@@ -24,6 +24,8 @@ export { QFCEvents } from './events.js';
 export type { EventSubscription, TransferEvent, SwapEvent, BlockEvent } from './events.js';
 export { QFCAgent } from './agent.js';
 export type { AgentPermission, AgentInfo, SessionKeyInfo, AgentTxResult, RegisterAgentResult, PreflightResult, PreflightOptions } from './agent.js';
+export { AgentWalletClient } from './agent-wallet.js';
+export type { RegisterAgentOptions, SessionKeyConfig, IssueSessionKeyOptions, AgentInferenceResult } from './agent-wallet.js';
 export { QFCDiscordBot } from './discord.js';
 export type { BotCommand, BotResponse } from './discord.js';
 export { QFCMinerMonitor } from './miner-monitor.js';
