@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { NetworkName, createProvider } from './provider.js';
+import { NetworkName, createProvider, getNetworkConfig } from './provider.js';
 
 /**
  * Permission enum values matching the AgentRegistry contract.
@@ -29,6 +29,25 @@ export interface AgentInfo {
   active: boolean;
 }
 
+/** Session key info returned by getSessionKey */
+export interface SessionKeyInfo {
+  agentId: string;
+  keyAddress: string;
+  expiresAt: bigint;
+  active: boolean;
+}
+
+/** Result from register/fund/revoke/session-key write operations */
+export interface AgentTxResult {
+  txHash: string;
+  explorerUrl: string;
+}
+
+/** Result from registerAgent (includes agentId) */
+export interface RegisterAgentResult extends AgentTxResult {
+  agentId: string;
+}
+
 /** Registry addresses per network */
 const REGISTRY_ADDRESS: Record<NetworkName, string> = {
   testnet: '0x7791dfa4d489f3d524708cbc0caa8689b76322b3',
@@ -42,6 +61,9 @@ const AGENT_REGISTRY_ABI = [
   'function getAgent(string agentId) view returns (tuple(string agentId, address owner, address agentAddress, uint8[] permissions, uint256 dailyLimit, uint256 maxPerTx, uint256 deposit, uint256 spentToday, uint256 lastSpendDay, uint256 registeredAt, bool active))',
   'function getAgentsByOwner(address owner) view returns (string[])',
   'function issueSessionKey(string agentId, address sessionKeyAddress, uint256 durationSeconds)',
+  'function rotateSessionKey(string agentId, address oldKeyAddress, address newKeyAddress, uint256 durationSeconds)',
+  'function revokeSessionKey(string agentId, address keyAddress)',
+  'function getSessionKey(string agentId, address keyAddress) view returns (tuple(string agentId, address keyAddress, uint256 expiresAt, bool active))',
   'function isSessionKeyValid(address keyAddress) view returns (bool)',
 ];
 
@@ -49,16 +71,31 @@ const AGENT_REGISTRY_ABI = [
  * QFCAgent — AI Agent Registry interaction.
  *
  * Manages on-chain agent accounts: registration, funding, revocation,
- * session key management, and querying agent info.
+ * session key lifecycle (issue, rotate, revoke, validate), and querying agent info.
+ *
+ * @example
+ * ```ts
+ * const agent = new QFCAgent('testnet');
+ * // Register
+ * const result = await agent.registerAgent(signer, 'my-agent', agentAddr, ['Transfer'], '100', '10', '5');
+ * // Issue session key
+ * await agent.issueSessionKey(signer, 'my-agent', sessionAddr, 3600);
+ * // Rotate session key
+ * await agent.rotateSessionKey(signer, 'my-agent', oldAddr, newAddr, 3600);
+ * // Revoke session key
+ * await agent.revokeSessionKey(signer, 'my-agent', sessionAddr);
+ * ```
  */
 export class QFCAgent {
   private provider: ethers.JsonRpcProvider;
   private registryAddress: string;
   private network: NetworkName;
+  private networkConfig;
 
   constructor(network: NetworkName = 'testnet') {
     this.network = network;
     this.provider = createProvider(network);
+    this.networkConfig = getNetworkConfig(network);
     this.registryAddress = REGISTRY_ADDRESS[network];
   }
 
@@ -84,6 +121,29 @@ export class QFCAgent {
     throw new Error(`Transaction ${txHash} not confirmed after ${timeoutMs / 1000}s`);
   }
 
+  private explorerTxUrl(txHash: string): string {
+    return `${this.networkConfig.explorerUrl}/txs/${txHash}`;
+  }
+
+  private requireAgentId(agentId: string): void {
+    if (!agentId || agentId.trim().length === 0) {
+      throw new Error('agentId must be a non-empty string.');
+    }
+  }
+
+  private requireAddress(address: string, label: string): void {
+    if (!ethers.isAddress(address)) {
+      throw new Error(`Invalid ${label} format. Expected 0x + 40 hex characters.`);
+    }
+  }
+
+  private requirePositiveAmount(value: string, label: string): void {
+    const parsed = parseFloat(value);
+    if (isNaN(parsed) || parsed <= 0) {
+      throw new Error(`${label} must be a positive number.`);
+    }
+  }
+
   /**
    * Register a new AI agent on the registry.
    * @param ownerSigner - wallet of the agent owner
@@ -102,7 +162,16 @@ export class QFCAgent {
     dailyLimitQFC: string,
     maxPerTxQFC: string,
     depositQFC: string,
-  ): Promise<{ txHash: string; agentId: string }> {
+  ): Promise<RegisterAgentResult> {
+    this.requireAgentId(agentId);
+    this.requireAddress(agentAddress, 'agentAddress');
+    this.requirePositiveAmount(dailyLimitQFC, 'dailyLimitQFC');
+    this.requirePositiveAmount(maxPerTxQFC, 'maxPerTxQFC');
+    this.requirePositiveAmount(depositQFC, 'depositQFC');
+    if (permissions.length === 0) {
+      throw new Error('At least one permission is required.');
+    }
+
     const connected = ownerSigner.connect(this.provider);
     const contract = this.getContract(connected);
     const permissionValues = permissions.map((p) => PERMISSION_VALUES[p]);
@@ -121,7 +190,7 @@ export class QFCAgent {
       throw new Error(`registerAgent reverted (tx: ${tx.hash})`);
     }
 
-    return { txHash: tx.hash, agentId };
+    return { txHash: tx.hash, agentId, explorerUrl: this.explorerTxUrl(tx.hash) };
   }
 
   /**
@@ -131,7 +200,10 @@ export class QFCAgent {
     ownerSigner: ethers.Signer,
     agentId: string,
     amountQFC: string,
-  ): Promise<{ txHash: string }> {
+  ): Promise<AgentTxResult> {
+    this.requireAgentId(agentId);
+    this.requirePositiveAmount(amountQFC, 'amountQFC');
+
     const connected = ownerSigner.connect(this.provider);
     const contract = this.getContract(connected);
 
@@ -145,7 +217,7 @@ export class QFCAgent {
       throw new Error(`fundAgent reverted (tx: ${tx.hash})`);
     }
 
-    return { txHash: tx.hash };
+    return { txHash: tx.hash, explorerUrl: this.explorerTxUrl(tx.hash) };
   }
 
   /**
@@ -154,7 +226,9 @@ export class QFCAgent {
   async revokeAgent(
     ownerSigner: ethers.Signer,
     agentId: string,
-  ): Promise<{ txHash: string }> {
+  ): Promise<AgentTxResult> {
+    this.requireAgentId(agentId);
+
     const connected = ownerSigner.connect(this.provider);
     const contract = this.getContract(connected);
 
@@ -165,13 +239,15 @@ export class QFCAgent {
       throw new Error(`revokeAgent reverted (tx: ${tx.hash})`);
     }
 
-    return { txHash: tx.hash };
+    return { txHash: tx.hash, explorerUrl: this.explorerTxUrl(tx.hash) };
   }
 
   /**
    * Get agent info by ID.
    */
   async getAgent(agentId: string): Promise<AgentInfo> {
+    this.requireAgentId(agentId);
+
     const contract = this.getContract(this.provider);
     const result = await contract.getAgent(agentId);
 
@@ -194,20 +270,28 @@ export class QFCAgent {
    * List all agent IDs owned by an address.
    */
   async listAgents(ownerAddress: string): Promise<string[]> {
+    this.requireAddress(ownerAddress, 'ownerAddress');
+
     const contract = this.getContract(this.provider);
     return contract.getAgentsByOwner(ownerAddress);
   }
 
   /**
    * Issue a session key for an agent.
-   * @param durationSeconds - how long the session key is valid
+   * @param durationSeconds - how long the session key is valid (must be > 0)
    */
   async issueSessionKey(
     ownerSigner: ethers.Signer,
     agentId: string,
     sessionKeyAddress: string,
     durationSeconds: number,
-  ): Promise<{ txHash: string }> {
+  ): Promise<AgentTxResult> {
+    this.requireAgentId(agentId);
+    this.requireAddress(sessionKeyAddress, 'sessionKeyAddress');
+    if (!Number.isInteger(durationSeconds) || durationSeconds <= 0) {
+      throw new Error('durationSeconds must be a positive integer.');
+    }
+
     const connected = ownerSigner.connect(this.provider);
     const contract = this.getContract(connected);
 
@@ -220,13 +304,99 @@ export class QFCAgent {
       throw new Error(`issueSessionKey reverted (tx: ${tx.hash})`);
     }
 
-    return { txHash: tx.hash };
+    return { txHash: tx.hash, explorerUrl: this.explorerTxUrl(tx.hash) };
+  }
+
+  /**
+   * Rotate a session key: atomically revoke the old key and issue a new one.
+   * @param oldKeyAddress - the session key address to revoke
+   * @param newKeyAddress - the new session key address to authorize
+   * @param durationSeconds - validity period for the new key (must be > 0)
+   */
+  async rotateSessionKey(
+    ownerSigner: ethers.Signer,
+    agentId: string,
+    oldKeyAddress: string,
+    newKeyAddress: string,
+    durationSeconds: number,
+  ): Promise<AgentTxResult> {
+    this.requireAgentId(agentId);
+    this.requireAddress(oldKeyAddress, 'oldKeyAddress');
+    this.requireAddress(newKeyAddress, 'newKeyAddress');
+    if (oldKeyAddress.toLowerCase() === newKeyAddress.toLowerCase()) {
+      throw new Error('newKeyAddress must differ from oldKeyAddress.');
+    }
+    if (!Number.isInteger(durationSeconds) || durationSeconds <= 0) {
+      throw new Error('durationSeconds must be a positive integer.');
+    }
+
+    const connected = ownerSigner.connect(this.provider);
+    const contract = this.getContract(connected);
+
+    const tx = await contract.rotateSessionKey(
+      agentId,
+      oldKeyAddress,
+      newKeyAddress,
+      durationSeconds,
+      { gasLimit: 300_000 },
+    );
+
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') {
+      throw new Error(`rotateSessionKey reverted (tx: ${tx.hash})`);
+    }
+
+    return { txHash: tx.hash, explorerUrl: this.explorerTxUrl(tx.hash) };
+  }
+
+  /**
+   * Revoke a session key, immediately deactivating it.
+   */
+  async revokeSessionKey(
+    ownerSigner: ethers.Signer,
+    agentId: string,
+    keyAddress: string,
+  ): Promise<AgentTxResult> {
+    this.requireAgentId(agentId);
+    this.requireAddress(keyAddress, 'keyAddress');
+
+    const connected = ownerSigner.connect(this.provider);
+    const contract = this.getContract(connected);
+
+    const tx = await contract.revokeSessionKey(agentId, keyAddress, { gasLimit: 200_000 });
+
+    const receipt = await this.waitForReceipt(tx.hash);
+    if (receipt.status !== '0x1') {
+      throw new Error(`revokeSessionKey reverted (tx: ${tx.hash})`);
+    }
+
+    return { txHash: tx.hash, explorerUrl: this.explorerTxUrl(tx.hash) };
+  }
+
+  /**
+   * Get session key details for an agent.
+   */
+  async getSessionKey(agentId: string, keyAddress: string): Promise<SessionKeyInfo> {
+    this.requireAgentId(agentId);
+    this.requireAddress(keyAddress, 'keyAddress');
+
+    const contract = this.getContract(this.provider);
+    const result = await contract.getSessionKey(agentId, keyAddress);
+
+    return {
+      agentId: result.agentId,
+      keyAddress: result.keyAddress,
+      expiresAt: BigInt(result.expiresAt),
+      active: result.active,
+    };
   }
 
   /**
    * Check if a session key address is still valid.
    */
   async isSessionKeyValid(keyAddress: string): Promise<boolean> {
+    this.requireAddress(keyAddress, 'keyAddress');
+
     const contract = this.getContract(this.provider);
     return contract.isSessionKeyValid(keyAddress);
   }
